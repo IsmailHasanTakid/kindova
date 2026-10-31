@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
     ChevronDown,
     User,
@@ -12,11 +13,13 @@ import {
     LogOut,
 } from "lucide-react";
 
+import { authClient } from "@/lib/auth-client";
+
 const NavLogs = () => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const router = useRouter();
 
-    // Temporary user status
-    const isLoggedIn = false;
+    const { data: session, isPending } = authClient.useSession();
 
     const profileLinks = [
         { name: "My Profile", href: "/profile", icon: User },
@@ -25,7 +28,20 @@ const NavLogs = () => {
         { name: "Joined Events", href: "/joined-events", icon: Heart },
     ];
 
-    if (!isLoggedIn) {
+    const handleLogout = async () => {
+        await authClient.signOut();
+        setIsProfileOpen(false);
+        router.refresh();
+        router.push("/login");
+    };
+
+    if (isPending) {
+        return (
+            <div className="h-10 w-10 animate-pulse rounded-full bg-gray-200 dark:bg-gray-700" />
+        );
+    }
+
+    if (!session?.user) {
         return (
             <Link
                 href="/login"
@@ -36,6 +52,8 @@ const NavLogs = () => {
         );
     }
 
+    const user = session.user;
+
     return (
         <div className="relative">
             <button
@@ -43,9 +61,9 @@ const NavLogs = () => {
                 className="flex items-center gap-2 rounded-xl border border-gray-200 p-1.5 transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
             >
                 <img
-                    src="https://i.pravatar.cc/100"
-                    alt="Profile"
-                    title="User Name"
+                    src={user.image || "/default-avatar.png"}
+                    alt={user.name || "Profile"}
+                    title={user.name || "User"}
                     className="h-9 w-9 rounded-lg object-cover"
                 />
 
@@ -57,11 +75,11 @@ const NavLogs = () => {
 
                     <div className="border-b border-gray-100 px-3 py-3 dark:border-gray-700">
                         <p className="font-bold text-gray-900 dark:text-white">
-                            User Name
+                            {user.name}
                         </p>
 
                         <p className="text-xs text-gray-500">
-                            user@example.com
+                            {user.email}
                         </p>
                     </div>
 
@@ -82,14 +100,11 @@ const NavLogs = () => {
                     })}
 
                     <button
-                        onClick={() => {
-                            setIsProfileOpen(false);
-                            // Logout functionality will be added later
-                        }}
+                        onClick={handleLogout}
                         className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-red-500 transition hover:bg-red-50 dark:hover:bg-red-950/30"
                     >
                         <LogOut size={18} />
-                        Logout
+                        Sign Out
                     </button>
                 </div>
             )}

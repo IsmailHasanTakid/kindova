@@ -15,6 +15,7 @@ import {
     Globe,
     Image,
 } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 const SignupPage = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -26,14 +27,12 @@ const SignupPage = () => {
 
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
-
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         setError("");
         setSuccess("");
 
-        // Password Validation
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{6,}$/;
 
         if (!passwordRegex.test(password)) {
@@ -43,7 +42,6 @@ const SignupPage = () => {
             return;
         }
 
-        // Profile Photo URL Validation
         try {
             const url = new URL(photoURL);
 
@@ -56,287 +54,217 @@ const SignupPage = () => {
             return;
         }
 
-        // Signup Data
-        const userData = {
-            fullName,
-            email,
-            photoURL,
-            password,
-        };
+        try {
+            const { data, error } = await authClient.signUp.email({
+                name: fullName,
+                email,
+                password,
+                image: photoURL,
+            });
 
-        console.log(userData);
+            if (error) {
+                setError(error.message || "Registration failed!");
+                return;
+            }
 
-        setSuccess("Registration successful!");
+            setSuccess("Registration successful!");
 
-        // Better Auth signup will be added here
+        } catch {
+            setError("Something went wrong. Please try again.");
+        }
     };
 
     return (
         <main className="flex min-h-screen items-center justify-center bg-[#F7FAF8] px-4 py-10 dark:bg-gray-950">
 
-            <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl shadow-emerald-900/10 dark:bg-gray-900 md:grid-cols-2">
+            <div className="flex flex-col justify-center p-6 sm:p-10 lg:p-14">
 
-                {/* Left Side - Branding */}
+                <div>
 
-                <div className="relative hidden flex-col justify-between overflow-hidden bg-emerald-700 p-10 text-white md:flex">
+                    <span className="text-sm font-bold uppercase tracking-widest text-emerald-600">
+                        Get Started
+                    </span>
 
-                    <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-emerald-400/30 blur-3xl" />
+                    <h2 className="mt-3 text-3xl font-extrabold text-gray-900 dark:text-white">
+                        Create your account
+                    </h2>
 
-                    <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-lime-300/20 blur-3xl" />
-
-                    <Link href="/" className="relative flex items-center gap-3">
-
-                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-emerald-700">
-                            <HeartHandshake size={26} />
-                        </div>
-
-                        <div>
-                            <h1 className="text-2xl font-extrabold tracking-wide">
-                                KINDOVA
-                            </h1>
-
-                            <p className="text-[10px] tracking-[3px] text-emerald-100">
-                                TOGETHER FOR GOOD
-                            </p>
-                        </div>
-
-                    </Link>
-
-                    <div className="relative my-12">
-
-                        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/20 bg-white/10">
-                            <Leaf size={34} />
-                        </div>
-
-                        <h2 className="max-w-sm text-4xl font-extrabold leading-tight">
-                            Join Us and Make a Difference.
-                        </h2>
-
-                        <p className="mt-5 max-w-sm leading-7 text-emerald-100">
-                            Become a part of our community, connect with
-                            passionate people, and participate in meaningful
-                            social development events.
-                        </p>
-
-                        <div className="mt-10 flex items-center gap-3">
-
-                            <div className="flex -space-x-3">
-                                {[1, 2, 3, 4].map((item) => (
-                                    <img
-                                        key={item}
-                                        src={`https://i.pravatar.cc/100?img=${item + 10}`}
-                                        alt="Community member"
-                                        className="h-10 w-10 rounded-full border-2 border-emerald-700 object-cover"
-                                    />
-                                ))}
-                            </div>
-
-                            <p className="text-sm text-emerald-100">
-                                Together we can create change
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <p className="relative text-sm text-emerald-100">
-                        © 2026 KINDOVA. All rights reserved.
+                    <p className="mt-3 text-sm leading-6 text-gray-500 dark:text-gray-400">
+                        Join KINDOVA and start making a positive impact.
                     </p>
 
                 </div>
 
-                {/* Right Side - Signup Form */}
+                {/* Form */}
 
-                <div className="flex flex-col justify-center p-6 sm:p-10 lg:p-14">
+                <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+
+                    {/* Full Name */}
 
                     <div>
 
-                        <span className="text-sm font-bold uppercase tracking-widest text-emerald-600">
-                            Get Started
-                        </span>
+                        <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">
+                            Full Name
+                        </label>
 
-                        <h2 className="mt-3 text-3xl font-extrabold text-gray-900 dark:text-white">
-                            Create your account
-                        </h2>
+                        <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-4 transition focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/10 dark:border-gray-700 dark:bg-gray-800">
 
-                        <p className="mt-3 text-sm leading-6 text-gray-500 dark:text-gray-400">
-                            Join KINDOVA and start making a positive impact.
+                            <UserRound size={19} className="text-gray-400" />
+
+                            <input
+                                type="text"
+                                placeholder="Enter your full name"
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                required
+                                className="w-full bg-transparent py-3.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-white"
+                            />
+
+                        </div>
+
+                    </div>
+
+                    {/* Email */}
+
+                    <div>
+
+                        <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">
+                            Email Address
+                        </label>
+
+                        <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-4 transition focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/10 dark:border-gray-700 dark:bg-gray-800">
+
+                            <Mail size={19} className="text-gray-400" />
+
+                            <input
+                                type="email"
+                                placeholder="you@example.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                className="w-full bg-transparent py-3.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-white"
+                            />
+
+                        </div>
+
+                    </div>
+
+                    {/* Profile Photo URL */}
+
+                    <div>
+
+                        <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">
+                            Profile Photo URL
+                        </label>
+
+                        <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-4 transition focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/10 dark:border-gray-700 dark:bg-gray-800">
+
+                            <Image size={19} className="text-gray-400" />
+
+                            <input
+                                type="url"
+                                placeholder="https://example.com/photo.jpg"
+                                value={photoURL}
+                                required
+                                onChange={(e) => setPhotoURL(e.target.value)}
+                                className="w-full bg-transparent py-3.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-white"
+                            />
+
+                        </div>
+
+                    </div>
+
+                    {/* Password */}
+
+                    <div>
+
+                        <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">
+                            Password
+                        </label>
+
+                        <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-4 transition focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/10 dark:border-gray-700 dark:bg-gray-800">
+
+                            <Lock size={19} className="text-gray-400" />
+
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Enter your password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                className="w-full bg-transparent py-3.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-white"
+                            />
+
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="text-gray-400 transition hover:text-emerald-600"
+                                aria-label="Toggle password visibility"
+                            >
+                                {showPassword ? (
+                                    <EyeOff size={19} />
+                                ) : (
+                                    <Eye size={19} />
+                                )}
+                            </button>
+
+                        </div>
+
+                        <p className="mt-2 text-xs leading-5 text-gray-400">
+                            Minimum 6 characters, at least 1 uppercase and 1 lowercase letter.
                         </p>
 
                     </div>
 
-                    {/* Form */}
+                    {/* Error Message */}
 
-                    <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-
-                        {/* Full Name */}
-
-                        <div>
-
-                            <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">
-                                Full Name
-                            </label>
-
-                            <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-4 transition focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/10 dark:border-gray-700 dark:bg-gray-800">
-
-                                <UserRound size={19} className="text-gray-400" />
-
-                                <input
-                                    type="text"
-                                    placeholder="Enter your full name"
-                                    value={fullName}
-                                    onChange={(e) => setFullName(e.target.value)}
-                                    required
-                                    className="w-full bg-transparent py-3.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-white"
-                                />
-
-                            </div>
-
+                    {error && (
+                        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900 dark:bg-red-950/30 dark:text-red-400">
+                            {error}
                         </div>
+                    )}
 
-                        {/* Email */}
+                    {/* Success Message */}
 
-                        <div>
-
-                            <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">
-                                Email Address
-                            </label>
-
-                            <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-4 transition focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/10 dark:border-gray-700 dark:bg-gray-800">
-
-                                <Mail size={19} className="text-gray-400" />
-
-                                <input
-                                    type="email"
-                                    placeholder="you@example.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                    className="w-full bg-transparent py-3.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-white"
-                                />
-
-                            </div>
-
+                    {success && (
+                        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-400">
+                            {success}
                         </div>
+                    )}
 
-                        {/* Profile Photo URL */}
+                    {/* Submit Button */}
 
-                        <div>
+                    <button
+                        type="submit"
+                        className="group flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3.5 font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700"
+                    >
+                        Create Account
 
-                            <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">
-                                Profile Photo URL
-                            </label>
+                        <ArrowRight
+                            size={19}
+                            className="transition-transform group-hover:translate-x-1"
+                        />
+                    </button>
 
-                            <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-4 transition focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/10 dark:border-gray-700 dark:bg-gray-800">
+                </form>
 
-                                <Image size={19} className="text-gray-400" />
+                {/* Login Link */}
 
-                                <input
-                                    type="url"
-                                    placeholder="https://example.com/photo.jpg"
-                                    value={photoURL}
-                                    onChange={(e) => setPhotoURL(e.target.value)}
-                                    required
-                                    className="w-full bg-transparent py-3.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-white"
-                                />
+                <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                    Already have an account?{" "}
 
-                            </div>
+                    <Link
+                        href="/login"
+                        className="font-bold text-emerald-600 transition hover:text-emerald-700"
+                    >
+                        Sign in
+                    </Link>
 
-                        </div>
-
-                        {/* Password */}
-
-                        <div>
-
-                            <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">
-                                Password
-                            </label>
-
-                            <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-4 transition focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/10 dark:border-gray-700 dark:bg-gray-800">
-
-                                <Lock size={19} className="text-gray-400" />
-
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    placeholder="Enter your password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    className="w-full bg-transparent py-3.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-white"
-                                />
-
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="text-gray-400 transition hover:text-emerald-600"
-                                    aria-label="Toggle password visibility"
-                                >
-                                    {showPassword ? (
-                                        <EyeOff size={19} />
-                                    ) : (
-                                        <Eye size={19} />
-                                    )}
-                                </button>
-
-                            </div>
-
-                            <p className="mt-2 text-xs leading-5 text-gray-400">
-                                Minimum 6 characters, at least 1 uppercase and 1 lowercase letter.
-                            </p>
-
-                        </div>
-
-                        {/* Error Message */}
-
-                        {error && (
-                            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900 dark:bg-red-950/30 dark:text-red-400">
-                                {error}
-                            </div>
-                        )}
-
-                        {/* Success Message */}
-
-                        {success && (
-                            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-400">
-                                {success}
-                            </div>
-                        )}
-
-                        {/* Submit Button */}
-
-                        <button
-                            type="submit"
-                            className="group flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3.5 font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700"
-                        >
-                            Create Account
-
-                            <ArrowRight
-                                size={19}
-                                className="transition-transform group-hover:translate-x-1"
-                            />
-                        </button>
-
-                    </form>
-
-                    {/* Login Link */}
-
-                    <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                        Already have an account?{" "}
-
-                        <Link
-                            href="/login"
-                            className="font-bold text-emerald-600 transition hover:text-emerald-700"
-                        >
-                            Sign in
-                        </Link>
-
-                    </p>
-
-                </div>
+                </p>
 
             </div>
 
-        </main>
+        </main >
     );
 };
 
