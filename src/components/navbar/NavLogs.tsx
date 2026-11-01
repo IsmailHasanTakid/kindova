@@ -29,7 +29,6 @@ const NavLogs = () => {
         { name: "Joined Events", href: "/joined-events", icon: Heart },
     ];
 
-    // বাইরে ক্লিক করলে এবং Esc চাপলে ড্রপডাউন বন্ধ
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent | TouchEvent) => {
             if (
