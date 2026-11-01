@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, HeartHandshake } from "lucide-react";
 
+// ছবিগুলো কমপক্ষে 2400px চওড়া রাখো (সম্ভব হলে .webp / .jpg, quality 85+)
 const images = [
     "/hero/1.jpg",
     "/hero/2.jpg",
@@ -38,10 +40,9 @@ export default function Hero() {
     return (
         <section className="px-3 py-3 sm:px-6 sm:py-5 lg:px-8">
 
+            <div className="relative mx-auto flex h-[85svh] min-h-[580px] max-h-[780px] max-w-7xl items-end justify-center overflow-hidden rounded-2xl text-white sm:min-h-[650px] sm:rounded-3xl lg:min-h-[680px]">
 
-            <div className="relative mx-auto flex min-h-[580px] max-h-[780px] h-[85svh] max-w-7xl items-end justify-center overflow-hidden rounded-2xl text-white sm:min-h-[650px] sm:rounded-3xl lg:min-h-[680px]">
-
-
+                {/* Background Images (next/image: ডিভাইস অনুযায়ী HD আকার নিজে বেছে নেয়) */}
                 {images.map((src, index) => (
                     <div
                         key={src}
@@ -51,18 +52,22 @@ export default function Hero() {
                             : "opacity-0"
                             }`}
                     >
-                        <div
-                            className="absolute inset-0 bg-cover bg-center"
-                            style={{ backgroundImage: `url(${src})` }}
+                        <Image
+                            src={src}
+                            alt=""
+                            fill
+                            quality={90}
+                            priority={index === 0}
+                            sizes="(min-width: 1280px) 1280px, 100vw"
+                            className="object-cover object-center"
                         />
                     </div>
                 ))}
 
-
-                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-black/10" />
+                {/* Overlay: উপরের দিক প্রায় স্বচ্ছ, শুধু নিচে লেখার জায়গায় গাঢ় */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
                 <div className="relative z-10 w-full px-3 pb-7 text-center sm:px-8 sm:pb-10 lg:px-12 lg:pb-12">
-
 
                     <h1 className="mx-auto whitespace-nowrap text-[clamp(1.45rem,5.5vw,4.5rem)] font-black leading-tight tracking-[-0.025em] sm:text-[clamp(2.5rem,5vw,4.5rem)]">
                         Small Acts
@@ -70,11 +75,12 @@ export default function Hero() {
                             Big Changes.
                         </span>
                     </h1>
+
                     <p className="mx-auto mt-3 max-w-md text-xs leading-6 text-white/85 sm:mt-4 sm:text-base sm:leading-7">
                         Together, we can make the world a better place.
                     </p>
 
-
+                    {/* Buttons */}
                     <div className="mx-auto mt-5 flex max-w-sm flex-col justify-center gap-3 sm:mt-7 sm:max-w-none sm:flex-row">
 
                         <Link
@@ -94,6 +100,8 @@ export default function Hero() {
                         </Link>
 
                     </div>
+
+                    {/* Statistics */}
                     <div className="mx-auto mt-6 grid max-w-2xl grid-cols-2 gap-2 sm:mt-8 sm:grid-cols-4 sm:gap-3">
 
                         {statistics.map((item) => (
@@ -112,6 +120,8 @@ export default function Hero() {
                         ))}
 
                     </div>
+
+                    {/* Image Indicators */}
                     <div className="mt-6 hidden justify-center gap-2 sm:flex">
                         {images.map((_, index) => (
                             <button

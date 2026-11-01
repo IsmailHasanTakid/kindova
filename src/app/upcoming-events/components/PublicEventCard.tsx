@@ -67,7 +67,7 @@ const PublicEventCard = ({ event }: { event: PublicEvent }) => {
 
     return (
         <article className="group flex flex-col overflow-hidden rounded-3xl border border-gray-200 transition duration-300 hover:-translate-y-1 hover:border-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/10 dark:border-white/10">
-            {/* Image */}
+
             <Link
                 href={`/events/${event._id}`}
                 className="relative block h-52 overflow-hidden"
@@ -79,19 +79,18 @@ const PublicEventCard = ({ event }: { event: PublicEvent }) => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
 
-                {/* Type (top-left) */}
+
                 <span className="absolute left-3 top-3 rounded-full bg-black/50 px-3 py-1 text-xs font-medium text-emerald-300 backdrop-blur">
                     {event.eventType}
                 </span>
 
-                {/* Days left (top-right) */}
                 {daysLeft && (
                     <span className="absolute right-3 top-3 rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white">
                         {daysLeft}
                     </span>
                 )}
 
-                {/* Date badge (bottom-left) */}
+
                 <div className="absolute bottom-3 left-3 flex items-center gap-3 rounded-2xl bg-white/15 px-3 py-2 ring-1 ring-white/20 backdrop-blur-md">
                     <div className="text-center leading-none">
                         <p className="text-2xl font-extrabold text-white">{day}</p>
@@ -109,7 +108,7 @@ const PublicEventCard = ({ event }: { event: PublicEvent }) => {
                 </div>
             </Link>
 
-            {/* Body */}
+
             <div className="flex flex-1 flex-col p-5">
                 <h2 className="line-clamp-2 text-lg font-bold capitalize leading-snug text-gray-900 dark:text-white">
                     {event.title}

@@ -17,7 +17,9 @@ import {
     Navigation,
     Timer,
     History,
+    Heart,
 } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 type EventDetails = {
     _id: string;
@@ -37,6 +39,12 @@ type EventDetails = {
     status: string;
     createdAt?: string;
     updatedAt?: string;
+    joinedUsers?: {
+        email: string;
+        name: string;
+        image?: string;
+        joinedAt: string;
+    }[];
 };
 
 const API_URL = "http://localhost:5000/api/events";
@@ -64,19 +72,13 @@ const statusStyle = (status: string) => {
     }
 };
 
-// "2026-11-03" → "Tuesday, 3 November 2026"
 const formatFullDate = (dateStr: string) => {
     const d = new Date(`${dateStr}T00:00:00`);
     if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleDateString("en-GB", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-    });
+    return d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric", });
 };
 
-// "08:58" → "8:58 AM"
+
 const formatTime = (timeStr: string) => {
     const [h, m] = (timeStr || "").split(":").map(Number);
     if (isNaN(h) || isNaN(m)) return timeStr;
@@ -84,7 +86,6 @@ const formatTime = (timeStr: string) => {
     return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${suffix}`;
 };
 
-// ISO → "1 Nov 2026"
 const formatShortDate = (iso?: string) => {
     if (!iso) return "";
     const d = new Date(iso);
@@ -96,7 +97,6 @@ const formatShortDate = (iso?: string) => {
     });
 };
 
-// ইভেন্টের কত দিন বাকি
 const getCountdown = (dateStr: string) => {
     const target = new Date(`${dateStr}T00:00:00`);
     if (isNaN(target.getTime())) return null;
@@ -118,7 +118,12 @@ const cardClass =
 export default function EventDetailsPage() {
     const { id } = useParams<{ id: string }>();
     const router = useRouter();
+    const { data: session } = authClient.useSession();
 
+    const [isOwner, setIsOwner] = useState(false);
+    const [isJoined, setIsJoined] = useState(false);
+    const [joining, setJoining] = useState(false);
+    const [joinMessage, setJoinMessage] = useState("");
     const [event, setEvent] = useState<EventDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -131,7 +136,11 @@ export default function EventDetailsPage() {
                 setLoading(true);
                 setError("");
 
-                const res = await fetch(`${API_URL}/${id}`);
+                const email = session?.user?.email || "";
+
+                const res = await fetch(
+                    `${API_URL}/${id}?email=${encodeURIComponent(email)}`
+                );
                 const data = await res.json();
 
                 if (!res.ok || !data.success) {
@@ -139,6 +148,13 @@ export default function EventDetailsPage() {
                 }
 
                 setEvent(data.event);
+                setIsOwner(data.isOwner);
+
+                setIsJoined(
+                    data.event.joinedUsers?.some(
+                        (user) => user.email === email
+                    ) || false
+                );
             } catch (err) {
                 setError(err instanceof Error ? err.message : "Something went wrong");
             } finally {
@@ -147,7 +163,63 @@ export default function EventDetailsPage() {
         };
 
         fetchEvent();
-    }, [id]);
+    }, [id, session?.user?.email]);
+
+
+
+
+    // leave korar jonno 
+    const handleJoinLeave = async () => {
+        if (!session?.user) {
+            router.push("/login");
+            return;
+        }
+
+        try {
+            setJoining(true);
+            setJoinMessage("");
+
+            const email = session.user.email;
+
+            const res = await fetch(
+                `${API_URL}/${id}/${isJoined ? "leave" : "join"}`,
+                {
+                    method: isJoined ? "DELETE" : "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(
+                        isJoined
+                            ? { email }
+                            : {
+                                email,
+                                name: session.user.name,
+                                image: session.user.image || "",
+                            }
+                    ),
+                }
+            );
+
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || "Something went wrong");
+            }
+
+            setIsJoined(!isJoined);
+
+            setJoinMessage(data.message);
+
+        } catch (error) {
+            setJoinMessage(
+                error instanceof Error
+                    ? error.message
+                    : "Something went wrong"
+            );
+        } finally {
+            setJoining(false);
+        }
+    };
 
     // Loading
     if (loading) {
@@ -190,9 +262,7 @@ export default function EventDetailsPage() {
     const percent = limit > 0 ? Math.min((required / limit) * 100, 100) : 0;
 
     const mapQuery = encodeURIComponent(event.fullAddress || event.location);
-    const wasUpdated =
-        event.updatedAt &&
-        event.createdAt &&
+    const wasUpdated = event.updatedAt && event.createdAt &&
         formatShortDate(event.updatedAt) !== formatShortDate(event.createdAt);
 
     const infoItems = [
@@ -215,7 +285,7 @@ export default function EventDetailsPage() {
                     Back
                 </button>
 
-                {/* Banner */}
+
                 <div className="relative h-64 overflow-hidden rounded-3xl sm:h-80 lg:h-[26rem]">
                     <img
                         src={event.thumbnailUrl}
@@ -247,15 +317,57 @@ export default function EventDetailsPage() {
 
                 <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_340px]">
 
-                    {/* ================= LEFT ================= */}
-                    <div className="space-y-6">
 
-                        {/* Tagline */}
+                    <div className="space-y-6">
+                        {/* Join / Leave Event Button */}
+                        {!isOwner && (
+                            <section className={cardClass}>
+                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+                                    <div>
+                                        <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                                            Join This Event
+                                        </h2>
+
+                                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                            Be a part of this initiative and make a difference.
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        onClick={handleJoinLeave}
+                                        disabled={joining}
+                                        className={`flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-60 ${isJoined
+                                            ? "bg-red-500 hover:bg-red-600"
+                                            : "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+                                            }`}
+                                    >
+                                        {joining ? (
+                                            <Loader2 size={18} className="animate-spin" />
+                                        ) : (
+                                            <Heart size={18} />
+                                        )}
+
+                                        {joining
+                                            ? "Please wait..."
+                                            : isJoined
+                                                ? "Leave Event"
+                                                : "Join Event"}
+                                    </button>
+                                </div>
+
+                                {joinMessage && (
+                                    <p className="mt-3 text-sm text-emerald-600 dark:text-emerald-400">
+                                        {joinMessage}
+                                    </p>
+                                )}
+                            </section>
+                        )}
                         <p className="border-l-4 border-emerald-500 py-1 pl-4 text-sm italic leading-7 text-emerald-600 dark:text-emerald-300">
                             “{tagline}”
                         </p>
 
-                        {/* About */}
+
                         <section className={cardClass}>
                             <h2 className="mb-3 text-lg font-bold text-gray-900 dark:text-white">
                                 About this event
@@ -265,7 +377,6 @@ export default function EventDetailsPage() {
                             </p>
                         </section>
 
-                        {/* Venue */}
                         <section className={cardClass}>
                             <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white">
                                 <MapPin size={19} className="text-emerald-500" />
@@ -291,8 +402,6 @@ export default function EventDetailsPage() {
                                 View on Google Maps
                             </a>
                         </section>
-
-                        {/* Additional requirements */}
                         {event.additionalRequirements && (
                             <section className={cardClass}>
                                 <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white">
@@ -305,11 +414,7 @@ export default function EventDetailsPage() {
                             </section>
                         )}
                     </div>
-
-                    {/* ================= RIGHT ================= */}
                     <aside className="h-fit space-y-5 lg:sticky lg:top-28">
-
-                        {/* Countdown */}
                         {countdown && (
                             <div
                                 className={`flex items-center gap-3 rounded-2xl border p-4 ${countdown.tone === "ended"
@@ -324,8 +429,6 @@ export default function EventDetailsPage() {
                                 </div>
                             </div>
                         )}
-
-                        {/* Info */}
                         <div className={cardClass}>
                             <h2 className="mb-4 text-base font-bold text-gray-900 dark:text-white">
                                 Event Information
@@ -349,8 +452,6 @@ export default function EventDetailsPage() {
                                 ))}
                             </div>
                         </div>
-
-                        {/* Volunteers */}
                         <div className={cardClass}>
                             <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-gray-900 dark:text-white">
                                 <Users size={18} className="text-emerald-500" />
@@ -390,8 +491,6 @@ export default function EventDetailsPage() {
                                 </div>
                             )}
                         </div>
-
-                        {/* Contact */}
                         <div className={cardClass}>
                             <h2 className="mb-3 text-base font-bold text-gray-900 dark:text-white">
                                 Contact
@@ -411,8 +510,6 @@ export default function EventDetailsPage() {
                                 </a>
                             )}
                         </div>
-
-                        {/* Meta */}
                         {(event.createdAt || wasUpdated) && (
                             <div className="space-y-1.5 px-1 text-xs text-gray-500 dark:text-gray-400">
                                 {event.createdAt && (
