@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -17,6 +18,7 @@ import { authClient } from "@/lib/auth-client";
 const NavLogs = () => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+
     const router = useRouter();
     const pathname = usePathname();
 
@@ -29,6 +31,7 @@ const NavLogs = () => {
         { name: "Joined Events", href: "/joined-events", icon: Heart },
     ];
 
+    // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent | TouchEvent) => {
             if (
@@ -40,7 +43,9 @@ const NavLogs = () => {
         };
 
         const handleEscape = (event: KeyboardEvent) => {
-            if (event.key === "Escape") setIsProfileOpen(false);
+            if (event.key === "Escape") {
+                setIsProfileOpen(false);
+            }
         };
 
         document.addEventListener("mousedown", handleClickOutside);
@@ -54,16 +59,21 @@ const NavLogs = () => {
         };
     }, []);
 
-    // পেজ বদলালে ড্রপডাউন বন্ধ
+    // Close dropdown after navigation
     useEffect(() => {
         setIsProfileOpen(false);
     }, [pathname]);
 
+    // Logout
     const handleLogout = async () => {
-        await authClient.signOut();
-        setIsProfileOpen(false);
-        router.refresh();
-        router.push("/login");
+        try {
+            await authClient.signOut();
+            setIsProfileOpen(false);
+            router.refresh();
+            router.push("/login");
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
     };
 
     if (isPending) {
@@ -76,7 +86,7 @@ const NavLogs = () => {
         return (
             <Link
                 href="/login"
-                className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-500/40 active:translate-y-0"
+                className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-500/40"
             >
                 Login
             </Link>
@@ -86,12 +96,16 @@ const NavLogs = () => {
     const user = session.user;
 
     return (
-        <div className="relative" ref={dropdownRef}>
-            {/* Trigger Button */}
+        <div
+            className="relative flex items-center gap-2"
+            ref={dropdownRef}
+        >
+            {/* Profile Trigger Button */}
             <button
                 onClick={() => setIsProfileOpen((prev) => !prev)}
                 aria-expanded={isProfileOpen}
                 aria-haspopup="menu"
+                aria-label="Open profile menu"
                 className={`group flex items-center gap-2 rounded-2xl border p-1.5 pr-2.5 transition-all duration-300 ${isProfileOpen
                     ? "border-emerald-400 bg-emerald-50 shadow-lg shadow-emerald-500/20 dark:border-emerald-500 dark:bg-emerald-950/30"
                     : "border-gray-200 bg-white/70 backdrop-blur hover:border-emerald-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-900/70 dark:hover:border-emerald-600"
@@ -106,21 +120,34 @@ const NavLogs = () => {
                             className="h-9 w-9 rounded-[10px] border-2 border-white object-cover dark:border-gray-900"
                         />
                     </div>
-                    {/* Online dot */}
+
+                    {/* Online Dot */}
                     <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500 dark:border-gray-900" />
                 </div>
 
                 <ChevronDown
                     size={16}
-                    className={`text-gray-500 transition-transform duration-300 group-hover:text-emerald-600 dark:text-gray-400 ${isProfileOpen ? "rotate-180 text-emerald-600" : ""
+                    className={`text-gray-500 transition-transform duration-300 group-hover:text-emerald-600 dark:text-gray-400 ${isProfileOpen
+                        ? "rotate-180 text-emerald-600"
+                        : ""
                         }`}
                 />
             </button>
 
-            {/* Dropdown */}
+            {/* Separate Logout Button */}
+            <button
+                onClick={handleLogout}
+                title="Logout"
+                className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-sm font-semibold text-red-500 transition hover:bg-red-500 hover:text-white"
+            >
+                <LogOut size={17} />
+                <span className="hidden sm:inline">Logout</span>
+            </button>
+
+            {/* Profile Dropdown */}
             <div
                 role="menu"
-                className={`absolute right-0 top-[calc(100%+12px)] z-50 w-72 origin-top-right overflow-hidden rounded-3xl border border-gray-200/80 bg-white/95 shadow-2xl shadow-black/10 backdrop-blur-xl transition-all duration-200 dark:border-gray-700/80 dark:bg-gray-900/95 dark:shadow-black/40 ${isProfileOpen
+                className={`absolute right-0 top-[calc(100%+12px)] z-[100] w-[min(18rem,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-3xl border border-gray-200/80 bg-white/95 shadow-2xl shadow-black/10 backdrop-blur-xl transition-all duration-200 dark:border-gray-700/80 dark:bg-gray-900/95 dark:shadow-black/40 ${isProfileOpen
                     ? "visible translate-y-0 scale-100 opacity-100"
                     : "invisible -translate-y-2 scale-95 opacity-0"
                     }`}
@@ -136,10 +163,12 @@ const NavLogs = () => {
                             alt={user.name || "Profile"}
                             className="h-12 w-12 rounded-2xl border-2 border-white/60 object-cover shadow-lg"
                         />
+
                         <div className="min-w-0">
                             <p className="truncate text-base font-bold text-white">
                                 {user.name}
                             </p>
+
                             <p className="truncate text-xs text-emerald-100">
                                 {user.email}
                             </p>
@@ -172,6 +201,7 @@ const NavLogs = () => {
                                 >
                                     <Icon size={17} />
                                 </span>
+
                                 {item.name}
                             </Link>
                         );
@@ -181,7 +211,7 @@ const NavLogs = () => {
                 {/* Divider */}
                 <div className="mx-4 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent dark:via-gray-700" />
 
-                {/* Sign Out */}
+                {/* Dropdown Sign Out */}
                 <div className="p-2">
                     <button
                         onClick={handleLogout}
@@ -191,6 +221,7 @@ const NavLogs = () => {
                         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-50 text-red-500 transition-colors duration-200 group-hover/out:bg-red-500 group-hover/out:text-white dark:bg-red-950/40">
                             <LogOut size={17} />
                         </span>
+
                         Sign Out
                     </button>
                 </div>

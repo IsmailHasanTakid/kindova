@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, HeartHandshake } from "lucide-react";
 
-// ছবিগুলো কমপক্ষে 2400px চওড়া রাখো (সম্ভব হলে .webp / .jpg, quality 85+)
 const images = [
     "/hero/1.jpg",
     "/hero/2.jpg",
@@ -40,7 +39,7 @@ export default function Hero() {
     return (
         <section className="px-3 py-3 sm:px-6 sm:py-5 lg:px-8">
 
-            <div className="relative mx-auto flex h-[85svh] min-h-[580px] max-h-[780px] max-w-7xl items-end justify-center overflow-hidden rounded-2xl text-white sm:min-h-[650px] sm:rounded-3xl lg:min-h-[680px]">
+            <div className="relative mx-auto flex h-[85svh] min-h-[580px] max-h-[780px] max-w-7xl items-end justify-center overflow-hidden rounded-2xl text-white sm:min-h-[650px] sm:rounded-3xl lg:min-h-[640px]">
 
                 {/* Background Images (next/image: ডিভাইস অনুযায়ী HD আকার নিজে বেছে নেয়) */}
                 {images.map((src, index) => (
