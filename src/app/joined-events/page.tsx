@@ -11,6 +11,7 @@ import {
     Loader2,
     SearchX,
 } from "lucide-react";
+import EventSkeleton from "../manage-events/components/EventSkeleton";
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/events`;
 
@@ -31,6 +32,7 @@ export default function JoinedEventsPage() {
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+
     useEffect(() => {
         if (isPending) return;
 
@@ -84,11 +86,29 @@ export default function JoinedEventsPage() {
         fetchJoinedEvents();
     }, [isPending, session]);
 
+    // Loading State
+    if (isPending || loading) {
+        return (
+            <main className="min-h-screen bg-gray-50 px-4 py-10 dark:bg-[#080D0B]">
+                <div className="mx-auto max-w-6xl">
+                    <EventSkeleton count={6} />
+                </div>
+            </main>
+        );
+    }
+
+    // Error State
     if (error) {
         return (
-            <main className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-                <p className="text-red-500">{error}</p>
-                <Link href="/login" className="mt-4 text-emerald-500">
+            <main className="flex min-h-[60vh] flex-col items-center justify-center bg-gray-50 px-4 text-center transition-colors duration-300 dark:bg-[#080D0B]">
+                <p className="text-red-500 dark:text-red-400">
+                    {error}
+                </p>
+
+                <Link
+                    href="/login"
+                    className="mt-4 font-semibold text-emerald-600 transition hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
+                >
                     Login
                 </Link>
             </main>
@@ -96,20 +116,24 @@ export default function JoinedEventsPage() {
     }
 
     return (
-        <main className="min-h-screen px-4 py-10 sm:px-6 lg:px-8">
+        <main className="min-h-screen bg-gray-50 px-4 py-10 transition-colors duration-300 dark:bg-[#080D0B] sm:px-6 lg:px-8">
             <div className="mx-auto max-w-6xl">
 
+                {/* Page Heading */}
                 <div className="mb-8">
                     <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">
                         Joined Events
                     </h1>
+
                     <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                         Events you have joined and are participating in.
                     </p>
                 </div>
 
                 {events.length === 0 ? (
-                    <div className="flex min-h-[300px] flex-col items-center justify-center rounded-3xl border border-gray-200 text-center dark:border-white/10">
+
+                    /* Empty State */
+                    <div className="flex min-h-[300px] flex-col items-center justify-center rounded-3xl border border-gray-200 bg-white text-center transition-colors duration-300 dark:border-white/10 dark:bg-[#101A16]">
                         <SearchX size={42} className="text-gray-400" />
 
                         <h2 className="mt-4 text-xl font-bold text-gray-900 dark:text-white">
@@ -127,14 +151,17 @@ export default function JoinedEventsPage() {
                             Explore Events
                         </Link>
                     </div>
+
                 ) : (
+
+                    /* Joined Events */
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {events.map((event) => (
                             <div
                                 key={event._id}
-                                className="overflow-hidden rounded-2xl border border-gray-200 bg-white transition hover:-translate-y-1 hover:shadow-xl dark:border-white/10 dark:bg-[#111827]"
+                                className="overflow-hidden rounded-2xl border border-gray-200 bg-white transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-white/10 dark:bg-[#101A16] dark:hover:border-emerald-500/30"
                             >
-                                <div className="h-48 overflow-hidden">
+                                <div className="h-48 overflow-hidden bg-gray-100 dark:bg-white/5">
                                     <img
                                         src={event.thumbnailUrl}
                                         alt={event.title}
@@ -153,12 +180,20 @@ export default function JoinedEventsPage() {
 
                                     <div className="mt-4 space-y-3 text-sm text-gray-500 dark:text-gray-400">
                                         <p className="flex items-center gap-2">
-                                            <CalendarDays size={16} />
+                                            <CalendarDays
+                                                size={16}
+                                                className="shrink-0 text-emerald-500"
+                                            />
+
                                             {event.eventDate} · {event.eventTime}
                                         </p>
 
                                         <p className="flex items-center gap-2">
-                                            <MapPin size={16} />
+                                            <MapPin
+                                                size={16}
+                                                className="shrink-0 text-emerald-500"
+                                            />
+
                                             <span className="line-clamp-1">
                                                 {event.location}
                                             </span>

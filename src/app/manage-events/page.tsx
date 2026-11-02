@@ -15,6 +15,7 @@ import {
 
 import { authClient } from "@/lib/auth-client";
 import EventCard, { type EventItem } from "./components/EventCard";
+import EventSkeleton from "./components/EventSkeleton";
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/events`;
 
@@ -198,9 +199,11 @@ const ManageEventsPage = () => {
 
     if (isPending || loading) {
         return (
-            <div className="flex min-h-[70vh] items-center justify-center bg-gray-50 dark:bg-gray-950">
-                <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
-            </div>
+            <main className="min-h-screen bg-gray-50 px-4 py-10 dark:bg-[#080D0B]">
+                <div className="mx-auto max-w-6xl">
+                    <EventSkeleton count={6} />
+                </div>
+            </main>
         );
     }
 

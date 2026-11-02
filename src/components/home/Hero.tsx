@@ -39,10 +39,11 @@ export default function Hero() {
     return (
         <section
             id="hero"
-            className="px-3 py-3 sm:px-6 sm:py-5 lg:px-8">
+            className="bg-gray-100 px-3 py-3 transition-colors duration-300 dark:bg-[#080D0B] sm:px-6 sm:py-5 lg:px-8"
+        >
+            <div className="relative mx-auto flex h-[85svh] min-h-[580px] max-h-[780px] max-w-7xl items-end justify-center overflow-hidden rounded-2xl text-white shadow-xl shadow-gray-300/20 dark:shadow-black/30 sm:min-h-[650px] sm:rounded-3xl lg:min-h-[640px]">
 
-            <div className="relative mx-auto flex h-[85svh] min-h-[580px] max-h-[780px] max-w-7xl items-end justify-center overflow-hidden rounded-2xl text-white sm:min-h-[650px] sm:rounded-3xl lg:min-h-[640px]">
-
+                {/* Background Images */}
                 {images.map((src, index) => (
                     <div
                         key={src}
@@ -64,18 +65,22 @@ export default function Hero() {
                     </div>
                 ))}
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                {/* Theme Based Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/5 transition-all duration-300 dark:from-black/95 dark:via-black/55 dark:to-black/20" />
 
+                {/* Content */}
                 <div className="relative z-10 w-full px-3 pb-7 text-center sm:px-8 sm:pb-10 lg:px-12 lg:pb-12">
 
-                    <h1 className="mx-auto whitespace-nowrap text-[clamp(1.45rem,5.5vw,4.5rem)] font-black leading-tight tracking-[-0.025em] sm:text-[clamp(2.5rem,5vw,4.5rem)]">
+                    {/* Heading */}
+                    <h1 className="mx-auto whitespace-nowrap text-[clamp(1.45rem,5.5vw,4.5rem)] font-black leading-tight tracking-[-0.025em] drop-shadow-lg sm:text-[clamp(2.5rem,5vw,4.5rem)]">
                         Small Acts
                         <span className="mx-1.5 bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-400 bg-clip-text text-transparent sm:mx-3">
                             Big Changes.
                         </span>
                     </h1>
 
-                    <p className="mx-auto mt-3 max-w-md text-xs leading-6 text-white/85 sm:mt-4 sm:text-base sm:leading-7">
+                    {/* Description */}
+                    <p className="mx-auto mt-3 max-w-md text-xs leading-6 text-white/90 drop-shadow-md sm:mt-4 sm:text-base sm:leading-7">
                         Together, we can make the world a better place.
                     </p>
 
@@ -84,7 +89,7 @@ export default function Hero() {
 
                         <Link
                             href="/explore"
-                            className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold transition duration-300 hover:bg-emerald-400 sm:px-7 sm:py-3.5 sm:text-base"
+                            className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition duration-300 hover:-translate-y-1 hover:bg-emerald-400 sm:px-7 sm:py-3.5 sm:text-base"
                         >
                             Explore Events
                             <ArrowRight size={18} />
@@ -92,7 +97,7 @@ export default function Hero() {
 
                         <Link
                             href="/create-event"
-                            className="flex items-center justify-center gap-2 rounded-xl border border-white/40 bg-white/10 px-6 py-3 text-sm font-semibold backdrop-blur-md transition duration-300 hover:bg-white/20 sm:px-7 sm:py-3.5 sm:text-base"
+                            className="flex items-center justify-center gap-2 rounded-xl border border-white/40 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md transition duration-300 hover:bg-white/20 sm:px-7 sm:py-3.5 sm:text-base"
                         >
                             <HeartHandshake size={18} />
                             Create Event
@@ -100,18 +105,19 @@ export default function Hero() {
 
                     </div>
 
+                    {/* Statistics */}
                     <div className="mx-auto mt-6 grid max-w-2xl grid-cols-2 gap-2 sm:mt-8 sm:grid-cols-4 sm:gap-3">
 
                         {statistics.map((item) => (
                             <div
                                 key={item.title}
-                                className="rounded-xl border border-white/20 bg-white/10 px-2 py-3 text-center shadow-lg backdrop-blur-md transition duration-300 hover:bg-white/20 sm:px-3"
+                                className="rounded-xl border border-white/20 bg-white/10 px-2 py-3 text-center shadow-lg backdrop-blur-md transition duration-300 hover:border-emerald-300/40 hover:bg-white/20 dark:border-white/15 dark:bg-black/25 dark:hover:bg-black/40 sm:px-3"
                             >
                                 <h3 className="text-lg font-extrabold tracking-tight text-emerald-300 sm:text-2xl">
                                     {item.number}
                                 </h3>
 
-                                <p className="mt-1 text-[10px] font-medium text-white/75 sm:text-xs">
+                                <p className="mt-1 text-[10px] font-medium text-white/80 sm:text-xs">
                                     {item.title}
                                 </p>
                             </div>
@@ -137,7 +143,6 @@ export default function Hero() {
 
                 </div>
             </div>
-
         </section>
     );
 }
