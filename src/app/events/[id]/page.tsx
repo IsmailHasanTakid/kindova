@@ -276,7 +276,7 @@ export default function EventDetailsPage() {
         <main className="px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
             <div className="mx-auto max-w-6xl">
 
-                {/* Back */}
+
                 <button
                     onClick={() => router.back()}
                     className="mb-5 inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-emerald-400 hover:text-emerald-600 dark:border-white/10 dark:text-gray-200 dark:hover:border-emerald-500 dark:hover:text-emerald-400"
@@ -286,11 +286,11 @@ export default function EventDetailsPage() {
                 </button>
 
 
-                <div className="relative h-64 overflow-hidden rounded-3xl sm:h-80 lg:h-[26rem]">
+                <div className="relative h-80 overflow-hidden rounded-3xl sm:h-96 lg:h-[32rem]">
                     <img
                         src={event.thumbnailUrl}
                         alt={event.title}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-contain"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
 
@@ -319,7 +319,7 @@ export default function EventDetailsPage() {
 
 
                     <div className="space-y-6">
-                        {/* Join / Leave Event Button */}
+
                         {!isOwner && (
                             <section className={cardClass}>
                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
