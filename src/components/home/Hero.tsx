@@ -37,7 +37,9 @@ export default function Hero() {
     }, []);
 
     return (
-        <section className="px-3 py-3 sm:px-6 sm:py-5 lg:px-8">
+        <section
+            id="hero"
+            className="px-3 py-3 sm:px-6 sm:py-5 lg:px-8">
 
             <div className="relative mx-auto flex h-[85svh] min-h-[580px] max-h-[780px] max-w-7xl items-end justify-center overflow-hidden rounded-2xl text-white sm:min-h-[650px] sm:rounded-3xl lg:min-h-[640px]">
 

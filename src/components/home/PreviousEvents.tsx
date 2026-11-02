@@ -62,24 +62,23 @@ export default function PreviousEvents() {
             <div className="mx-auto max-w-7xl">
 
                 {/* Section Heading */}
-                <div className="mb-10 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-                    <div>
-                        <p className="mb-3 text-sm font-semibold uppercase tracking-[3px] text-emerald-600 dark:text-emerald-400">
-                            Our Memories
-                        </p>
+                <div className="mb-10">
+                    <p className="mb-3 text-sm font-semibold uppercase tracking-[3px] text-emerald-600 dark:text-emerald-400">
+                        Our Journey
+                    </p>
 
-                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
-                            Previous{" "}
-                            <span className="text-emerald-600 dark:text-emerald-400">
-                                Events
-                            </span>
-                        </h2>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
+                        Every Action Leaves a{" "}
+                        <span className="text-emerald-600 dark:text-emerald-400">
+                            Lasting Impact
+                        </span>
+                    </h2>
 
-                        <p className="mt-3 max-w-xl text-sm leading-7 text-gray-600 dark:text-gray-400">
-                            Explore our past activities and the beautiful
-                            memories we have created together.
-                        </p>
-                    </div>
+                    <p className="mt-3 max-w-xl text-sm leading-7 text-gray-600 dark:text-gray-400">
+                        Every event tells a story of kindness, compassion, and togetherness.
+                        Take a look back at the moments when our community came together
+                        to make a difference.
+                    </p>
                 </div>
 
                 {/* Event Cards */}

@@ -11,6 +11,7 @@ import {
     CalendarHeart,
     Moon,
     ArrowUpRight,
+    Compass,
 } from "lucide-react";
 
 import NavLogs from "./NavLogs";
@@ -21,6 +22,11 @@ const navLinks = [
         name: "Upcoming Events",
         href: "/upcoming-events",
         icon: CalendarHeart,
+    },
+    {
+        name: "Explore",
+        href: "/explore",
+        icon: Compass,
     },
 ];
 
