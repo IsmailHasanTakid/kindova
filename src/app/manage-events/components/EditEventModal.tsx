@@ -1,3 +1,4 @@
+
 "use client";
 
 import { X, Loader2 } from "lucide-react";
@@ -24,8 +25,10 @@ const EVENT_TYPES = [
 ];
 
 const inputClass =
-    "w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20";
-const labelClass = "mb-1 block text-sm font-medium text-gray-700";
+    "w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-white/10 dark:bg-gray-800 dark:text-white dark:focus:border-emerald-400";
+
+const labelClass =
+    "mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300";
 
 const EditEventModal = ({
     event,
@@ -36,22 +39,24 @@ const EditEventModal = ({
 }: EditEventModalProps) => {
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
             onClick={() => !saving && onClose()}
         >
             <div
-                className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl"
+                className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-900"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
                 <div className="mb-6 flex items-center justify-between">
-                    <h2 className="text-xl font-bold text-gray-900">Edit Event</h2>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                        Edit Event
+                    </h2>
 
                     <button
                         type="button"
                         onClick={onClose}
                         disabled={saving}
-                        className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 disabled:opacity-50"
+                        className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 disabled:opacity-50 dark:text-gray-400 dark:hover:bg-white/10"
                     >
                         <X size={20} />
                     </button>
@@ -214,7 +219,7 @@ const EditEventModal = ({
                             type="button"
                             onClick={onClose}
                             disabled={saving}
-                            className="rounded-lg border border-gray-300 px-5 py-3 font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                            className="rounded-lg border border-gray-300 px-5 py-3 font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/10"
                         >
                             Cancel
                         </button>
