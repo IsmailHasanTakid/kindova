@@ -10,6 +10,7 @@ import {
     Home,
     CalendarHeart,
     Moon,
+    Sun,
     ArrowUpRight,
     Compass,
 } from "lucide-react";
@@ -34,9 +35,24 @@ const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [progress, setProgress] = useState(0);
-
+    const [isDark, setIsDark] = useState(false);
     const pathname = usePathname();
+    useEffect(() => {
+        const savedTheme = localStorage.getItem("theme");
+        const dark = savedTheme === "dark";
 
+        document.documentElement.classList.toggle("dark", dark);
+        setIsDark(dark);
+    }, []);
+
+    const toggleTheme = () => {
+        const nextTheme = !isDark;
+
+        setIsDark(nextTheme);
+        document.documentElement.classList.toggle("dark", nextTheme);
+
+        localStorage.setItem("theme", nextTheme ? "dark" : "light");
+    };
     // Scroll effect and progress
     useEffect(() => {
         const handleScroll = () => {
@@ -172,11 +188,12 @@ const Navbar = () => {
                             {/* Theme Icon - Functionality will be added later */}
                             <button
                                 type="button"
+                                onClick={toggleTheme}
                                 aria-label="Toggle dark mode"
-                                title="Theme"
+                                title={isDark ? "Switch to light mode" : "Switch to dark mode"}
                                 className="hidden h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 shadow-sm transition-all duration-300 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-600 active:scale-95 md:flex dark:border-white/10 dark:bg-white/5 dark:text-gray-300"
                             >
-                                <Moon size={19} />
+                                {isDark ? <Sun size={19} /> : <Moon size={19} />}
                             </button>
 
                             {/* Profile */}

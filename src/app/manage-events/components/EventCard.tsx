@@ -46,15 +46,21 @@ const categoryTaglines: Record<string, string> = {
     Other: "ছোট একটি উদ্যোগ, বড় একটি পরিবর্তনের শুরু।",
 };
 
-const EventCard = ({ event, onEdit, onDelete, deleting, }: EventCardProps) => {
-
+const EventCard = ({
+    event,
+    onEdit,
+    onDelete,
+    deleting,
+}: EventCardProps) => {
     const router = useRouter();
+
     const tagline =
         categoryTaglines[event.eventType] ||
         "মানবতার সেবায় এগিয়ে আসুন।";
 
     return (
-        <article className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+        <article className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-white/10 dark:bg-gray-900">
+
             {/* Image */}
             <div className="relative h-52 overflow-hidden">
                 <img
@@ -72,10 +78,10 @@ const EventCard = ({ event, onEdit, onDelete, deleting, }: EventCardProps) => {
                 <div className="absolute right-3 top-3">
                     <span
                         className={`rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ${event.status === "completed"
-                            ? "bg-blue-100 text-blue-700"
-                            : event.status === "cancelled"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-emerald-100 text-emerald-700"
+                                ? "bg-blue-100 text-blue-700"
+                                : event.status === "cancelled"
+                                    ? "bg-red-100 text-red-700"
+                                    : "bg-emerald-100 text-emerald-700"
                             }`}
                     >
                         {event.status || "Active"}
@@ -90,37 +96,42 @@ const EventCard = ({ event, onEdit, onDelete, deleting, }: EventCardProps) => {
 
             {/* Content */}
             <div className="p-5">
-                <h3 className="line-clamp-1 text-lg font-bold text-gray-900">
+                <h3 className="line-clamp-1 text-lg font-bold text-gray-900 dark:text-white">
                     {event.title}
                 </h3>
 
-                <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
-                    <MapPin size={15} className="shrink-0 text-emerald-600" />
+                <div className="mt-2 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <MapPin
+                        size={15}
+                        className="shrink-0 text-emerald-600 dark:text-emerald-400"
+                    />
                     <span className="line-clamp-1">{event.location}</span>
                 </div>
 
-                <p className="mt-4 min-h-10 text-sm leading-6 text-emerald-700">
+                <p className="mt-4 min-h-10 text-sm leading-6 text-emerald-700 dark:text-emerald-400">
                     {tagline}
                 </p>
 
                 {/* Event Information */}
                 <div className="mt-4 grid grid-cols-2 gap-3">
-                    <div className="rounded-xl bg-gray-50 p-3">
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <div className="rounded-xl bg-gray-50 p-3 dark:bg-white/5">
+                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                             <Clock size={14} />
                             Event Time
                         </div>
-                        <p className="mt-1 text-sm font-semibold text-gray-800">
+
+                        <p className="mt-1 text-sm font-semibold text-gray-800 dark:text-gray-200">
                             {event.eventTime}
                         </p>
                     </div>
 
-                    <div className="rounded-xl bg-gray-50 p-3">
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <div className="rounded-xl bg-gray-50 p-3 dark:bg-white/5">
+                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                             <Users size={14} />
                             Volunteers
                         </div>
-                        <p className="mt-1 text-sm font-semibold text-gray-800">
+
+                        <p className="mt-1 text-sm font-semibold text-gray-800 dark:text-gray-200">
                             {event.requiredVolunteers}/{event.volunteerLimit}
                         </p>
                     </div>
@@ -130,7 +141,7 @@ const EventCard = ({ event, onEdit, onDelete, deleting, }: EventCardProps) => {
                 <div className="mt-5 grid grid-cols-3 gap-2">
                     <button
                         onClick={() => router.push(`/events/${event._id}`)}
-                        className="flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 py-2.5 text-sm font-medium text-gray-700 transition hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-700"
+                        className="flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 py-2.5 text-sm font-medium text-gray-700 transition hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-700 dark:border-white/10 dark:text-gray-300 dark:hover:border-emerald-400 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
                     >
                         <Eye size={15} />
                         View
@@ -138,7 +149,7 @@ const EventCard = ({ event, onEdit, onDelete, deleting, }: EventCardProps) => {
 
                     <button
                         onClick={() => onEdit(event)}
-                        className="flex items-center justify-center gap-1.5 rounded-lg border border-blue-200 py-2.5 text-sm font-medium text-blue-700 transition hover:bg-blue-50"
+                        className="flex items-center justify-center gap-1.5 rounded-lg border border-blue-200 py-2.5 text-sm font-medium text-blue-700 transition hover:bg-blue-50 dark:border-blue-400/20 dark:text-blue-400 dark:hover:bg-blue-500/10"
                     >
                         <Pencil size={15} />
                         Edit
@@ -147,7 +158,7 @@ const EventCard = ({ event, onEdit, onDelete, deleting, }: EventCardProps) => {
                     <button
                         onClick={() => onDelete(event._id)}
                         disabled={deleting}
-                        className="flex items-center justify-center gap-1.5 rounded-lg border border-red-200 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex items-center justify-center gap-1.5 rounded-lg border border-red-200 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-400/20 dark:text-red-400 dark:hover:bg-red-500/10"
                     >
                         <Trash2 size={15} />
                         Delete

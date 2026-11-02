@@ -179,7 +179,11 @@ export default function EventDetailsPage() {
             setJoining(true);
             setJoinMessage("");
 
-            const email = session.user.email;
+            const { data: tokenData, error: tokenError } = await authClient.token();
+
+            if (tokenError || !tokenData?.token) {
+                throw new Error("Authentication token not found. Please login again.");
+            }
 
             const res = await fetch(
                 `${API_URL}/${id}/${isJoined ? "leave" : "join"}`,
@@ -187,16 +191,8 @@ export default function EventDetailsPage() {
                     method: isJoined ? "DELETE" : "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        Authorization: `Bearer ${tokenData.token}`,
                     },
-                    body: JSON.stringify(
-                        isJoined
-                            ? { email }
-                            : {
-                                email,
-                                name: session.user.name,
-                                image: session.user.image || "",
-                            }
-                    ),
                 }
             );
 
@@ -207,7 +203,6 @@ export default function EventDetailsPage() {
             }
 
             setIsJoined(!isJoined);
-
             setJoinMessage(data.message);
 
         } catch (error) {

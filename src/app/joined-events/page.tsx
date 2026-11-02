@@ -12,7 +12,7 @@ import {
     SearchX,
 } from "lucide-react";
 
-const API_URL = "http://localhost:5000/api/events";
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/events`;
 
 type Event = {
     _id: string;
@@ -31,7 +31,6 @@ export default function JoinedEventsPage() {
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-
     useEffect(() => {
         if (isPending) return;
 
@@ -45,9 +44,18 @@ export default function JoinedEventsPage() {
 
         const fetchJoinedEvents = async () => {
             try {
-                const res = await fetch(
-                    `${API_URL}/joined?email=${encodeURIComponent(email)}`
-                );
+                const { data: tokenData, error: tokenError } =
+                    await authClient.token();
+
+                if (tokenError || !tokenData?.token) {
+                    throw new Error("Authentication token not found");
+                }
+
+                const res = await fetch(`${API_URL}/joined`, {
+                    headers: {
+                        Authorization: `Bearer ${tokenData.token}`,
+                    },
+                });
 
                 const data = await res.json();
 
@@ -55,7 +63,13 @@ export default function JoinedEventsPage() {
                     throw new Error(data.message || "Failed to load events");
                 }
 
-                setEvents(data.events);
+                const sortedEvents = [...data.events].sort(
+                    (a, b) =>
+                        new Date(a.eventDate).getTime() -
+                        new Date(b.eventDate).getTime()
+                );
+
+                setEvents(sortedEvents);
             } catch (err) {
                 setError(
                     err instanceof Error
@@ -68,16 +82,7 @@ export default function JoinedEventsPage() {
         };
 
         fetchJoinedEvents();
-    }, [session, isPending]);
-
-    if (loading) {
-        return (
-            <main className="flex min-h-[60vh] items-center justify-center gap-2 text-gray-500">
-                <Loader2 size={22} className="animate-spin" />
-                Loading joined events...
-            </main>
-        );
-    }
+    }, [isPending, session]);
 
     if (error) {
         return (

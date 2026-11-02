@@ -16,7 +16,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import EventCard, { type EventItem } from "./components/EventCard";
 
-const API_URL = "http://localhost:5000/api/events";
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/events`;
 
 const ManageEventsPage = () => {
     const router = useRouter();
@@ -38,6 +38,7 @@ const ManageEventsPage = () => {
         const email = session?.user?.email;
 
         if (!email) {
+            toast.error("Please login to manage your events.");
             router.push("/login");
             return;
         }
@@ -46,18 +47,33 @@ const ManageEventsPage = () => {
             try {
                 setLoading(true);
 
-                const response = await fetch(
-                    `${API_URL}/my-events?email=${encodeURIComponent(email)}`
-                );
+                const { data: tokenData, error: tokenError } =
+                    await authClient.token();
 
-                if (!response.ok) {
-                    throw new Error("Failed to fetch events");
+                if (tokenError || !tokenData?.token) {
+                    throw new Error("Authentication token not found");
                 }
 
+                const response = await fetch(`${API_URL}/my-events`, {
+                    headers: {
+                        Authorization: `Bearer ${tokenData.token}`,
+                    },
+                });
+
                 const data = await response.json();
-                setEvents(Array.isArray(data) ? data : data.events || []);
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || "Failed to fetch events");
+                }
+
+                setEvents(data.events || []);
             } catch (error) {
                 console.error("Error fetching events:", error);
+                toast.error(
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to load your events!"
+                );
             } finally {
                 setLoading(false);
             }
@@ -68,9 +84,7 @@ const ManageEventsPage = () => {
 
     // Delete event
     const handleDelete = async (id: string) => {
-        const email = session?.user?.email;
-
-        if (!email) {
+        if (!session?.user) {
             toast.error("Please login first.");
             router.push("/login");
             return;
@@ -81,28 +95,40 @@ const ManageEventsPage = () => {
         try {
             setDeletingId(id);
 
-            const response = await fetch(
-                `${API_URL}/${id}?email=${encodeURIComponent(email)}`,
-                { method: "DELETE" }
-            );
+            const { data: tokenData, error: tokenError } =
+                await authClient.token();
+
+            if (tokenError || !tokenData?.token) {
+                throw new Error("Please login first.");
+            }
+
+            const response = await fetch(`${API_URL}/${id}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${tokenData.token}`,
+                },
+            });
+
             const data = await response.json();
 
             if (!response.ok || !data.success) {
                 throw new Error(data.message || "Failed to delete event");
             }
 
-            setEvents((previous) => previous.filter((event) => event._id !== id));
+            setEvents((previous) =>
+                previous.filter((event) => event._id !== id)
+            );
+
             toast.success("Event deleted successfully!");
         } catch (error) {
             console.error("Delete error:", error);
-            toast.error(error instanceof Error ? error.message : "Failed to delete event");
+            toast.error(
+                error instanceof Error ? error.message : "Failed to delete event"
+            );
         } finally {
             setDeletingId(null);
         }
     };
-
-
-
 
     // Update event
     const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -110,25 +136,28 @@ const ManageEventsPage = () => {
 
         if (!editingEvent) return;
 
-        const email = session?.user?.email;
-
-        if (!email) {
-            toast.error("Please login first.");
-            router.push("/login");
-            return;
-        }
-
         try {
             setSaving(true);
 
+            const { data: tokenData, error: tokenError } =
+                await authClient.token();
+
+            if (tokenError || !tokenData?.token) {
+                throw new Error("Please login first.");
+            }
+
             const response = await fetch(
-                `${API_URL}/${editingEvent._id}?email=${encodeURIComponent(email)}`,
+                `${API_URL}/${editingEvent._id}`,
                 {
                     method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${tokenData.token}`,
+                    },
                     body: JSON.stringify(editingEvent),
                 }
             );
+
             const data = await response.json();
 
             if (!response.ok || !data.success) {
@@ -147,7 +176,9 @@ const ManageEventsPage = () => {
             toast.success("Event updated successfully!");
         } catch (error) {
             console.error("Update error:", error);
-            toast.error(error instanceof Error ? error.message : "Failed to update event");
+            toast.error(
+                error instanceof Error ? error.message : "Failed to update event"
+            );
         } finally {
             setSaving(false);
         }
@@ -167,28 +198,28 @@ const ManageEventsPage = () => {
 
     if (isPending || loading) {
         return (
-            <div className="flex min-h-[70vh] items-center justify-center">
+            <div className="flex min-h-[70vh] items-center justify-center bg-gray-50 dark:bg-gray-950">
                 <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
             </div>
         );
     }
 
     return (
-        <main className="min-h-screen bg-gray-50 px-4 py-10 sm:px-6 lg:px-8">
+        <main className="min-h-screen bg-gray-50 px-4 py-10 transition-colors duration-300 dark:bg-gray-950 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-7xl">
 
                 {/* Header */}
                 <div className="mb-10 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
                     <div>
-                        <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-emerald-600">
+                        <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                             Your Contributions
                         </p>
 
-                        <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
                             Manage Your Events
                         </h1>
 
-                        <p className="mt-3 max-w-xl text-gray-500">
+                        <p className="mt-3 max-w-xl text-gray-500 dark:text-gray-400">
                             Every event is an opportunity to make a difference.
                             Manage your initiatives and continue spreading kindness.
                         </p>
@@ -205,29 +236,31 @@ const ManageEventsPage = () => {
 
                 {/* Summary */}
                 <div className="mb-8 grid gap-4 sm:grid-cols-2">
-                    <div className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                        <div className="rounded-xl bg-emerald-50 p-3 text-emerald-600">
+                    <div className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-gray-900">
+                        <div className="rounded-xl bg-emerald-50 p-3 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
                             <CalendarDays size={24} />
                         </div>
 
                         <div>
-                            <p className="text-sm text-gray-500">Total Events</p>
-                            <h2 className="text-2xl font-bold text-gray-900">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                Total Events
+                            </p>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                                 {events.length}
                             </h2>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                        <div className="rounded-xl bg-rose-50 p-3 text-rose-600">
+                    <div className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-gray-900">
+                        <div className="rounded-xl bg-rose-50 p-3 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400">
                             <Heart size={24} />
                         </div>
 
                         <div>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
                                 Total Volunteer Opportunities
                             </p>
-                            <h2 className="text-2xl font-bold text-gray-900">
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                                 {events.reduce(
                                     (total, event) =>
                                         total + Number(event.volunteerLimit || 0),
@@ -253,16 +286,16 @@ const ManageEventsPage = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center">
-                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                    <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center dark:border-white/20 dark:bg-gray-900">
+                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
                             <Users size={30} />
                         </div>
 
-                        <h2 className="text-xl font-bold text-gray-900">
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                             No Events Yet
                         </h2>
 
-                        <p className="mx-auto mt-2 max-w-md text-gray-500">
+                        <p className="mx-auto mt-2 max-w-md text-gray-500 dark:text-gray-400">
                             Your journey of kindness starts with one small step.
                             Create your first event and inspire others to participate.
                         </p>
@@ -280,15 +313,15 @@ const ManageEventsPage = () => {
             {/* View Event Modal */}
             {selectedEvent && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+                    <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-900">
                         <div className="mb-5 flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-gray-900">
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                                 Event Details
                             </h2>
 
                             <button
                                 onClick={() => setSelectedEvent(null)}
-                                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100"
+                                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/10"
                             >
                                 <X size={20} />
                             </button>
@@ -300,49 +333,49 @@ const ManageEventsPage = () => {
                             className="mb-5 h-56 w-full rounded-xl object-cover"
                         />
 
-                        <h3 className="text-2xl font-bold text-gray-900">
+                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
                             {selectedEvent.title}
                         </h3>
 
-                        <p className="mt-2 text-sm font-medium text-emerald-700">
+                        <p className="mt-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
                             {selectedEvent.eventType}
                         </p>
 
-                        <p className="mt-4 whitespace-pre-wrap leading-7 text-gray-600">
+                        <p className="mt-4 whitespace-pre-wrap leading-7 text-gray-600 dark:text-gray-300">
                             {selectedEvent.description}
                         </p>
 
                         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
                                 <strong>Date:</strong> {selectedEvent.eventDate}
                             </p>
 
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
                                 <strong>Time:</strong> {selectedEvent.eventTime}
                             </p>
 
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
                                 <strong>Location:</strong> {selectedEvent.location}
                             </p>
 
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
                                 <strong>Volunteers:</strong>{" "}
                                 {selectedEvent.requiredVolunteers}/
                                 {selectedEvent.volunteerLimit}
                             </p>
 
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
                                 <strong>Contact:</strong>{" "}
                                 {selectedEvent.contactNumber}
                             </p>
 
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
                                 <strong>Status:</strong> {selectedEvent.status}
                             </p>
                         </div>
 
                         {selectedEvent.fullAddress && (
-                            <p className="mt-4 text-sm text-gray-600">
+                            <p className="mt-4 text-sm text-gray-600 dark:text-gray-300">
                                 <strong>Full Address:</strong>{" "}
                                 {selectedEvent.fullAddress}
                             </p>
@@ -350,10 +383,10 @@ const ManageEventsPage = () => {
 
                         {selectedEvent.additionalRequirements && (
                             <div className="mt-4">
-                                <h4 className="font-semibold text-gray-800">
+                                <h4 className="font-semibold text-gray-800 dark:text-white">
                                     Additional Requirements
                                 </h4>
-                                <p className="mt-1 text-sm text-gray-600">
+                                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
                                     {selectedEvent.additionalRequirements}
                                 </p>
                             </div>

@@ -47,7 +47,7 @@ export default function PreviousEvents() {
 
     if (loading) {
         return (
-            <section className="py-20 text-center">
+            <section className="bg-white py-20 text-center transition-colors duration-300 dark:bg-gray-950">
                 <p className="text-gray-500 dark:text-gray-400">
                     Loading previous events...
                 </p>
@@ -58,7 +58,7 @@ export default function PreviousEvents() {
     if (events.length === 0) return null;
 
     return (
-        <section className="px-5 py-20 sm:px-8 lg:px-16">
+        <section className="bg-white px-5 py-20 transition-colors duration-300 dark:bg-gray-950 sm:px-8 lg:px-16">
             <div className="mx-auto max-w-7xl">
 
                 {/* Section Heading */}

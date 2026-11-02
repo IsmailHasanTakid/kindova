@@ -1,7 +1,7 @@
 
 "use client";
 import toast from "react-hot-toast";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import {
     UserRound,
@@ -35,9 +35,12 @@ export default function MyProfilePage() {
 
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-
+    const [selectedImage, setSelectedImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState("");
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [formData, setFormData] = useState({
         name: "",
+        image: "",
         phoneNumber: "",
         location: "",
         bio: "",
@@ -51,6 +54,7 @@ export default function MyProfilePage() {
             name: user.name || "",
             phoneNumber: user.phoneNumber || "",
             location: user.location || "",
+            image: user.image || "",
             bio: user.bio || "",
         });
     }, [user]);
@@ -61,9 +65,19 @@ export default function MyProfilePage() {
 
         const fetchEvents = async () => {
             try {
+                const { data: tokenData, error } = await authClient.token();
+
+                if (error || !tokenData?.token) {
+                    throw new Error("Authentication token not found");
+                }
+
+                const headers = {
+                    Authorization: `Bearer ${tokenData.token}`,
+                };
+
                 const [createdRes, joinedRes] = await Promise.all([
-                    fetch(`${API_URL}/api/events/my-events?email=${encodeURIComponent(user.email)}`),
-                    fetch(`${API_URL}/api/events/joined?email=${encodeURIComponent(user.email)}`),
+                    fetch(`${API_URL}/api/events/my-events`, { headers }),
+                    fetch(`${API_URL}/api/events/joined`, { headers }),
                 ]);
 
                 const createdData = await createdRes.json();
@@ -71,6 +85,7 @@ export default function MyProfilePage() {
 
                 if (createdData.success) setCreatedEvents(createdData.events);
                 if (joinedData.success) setJoinedEvents(joinedData.events);
+
             } catch (error) {
                 console.error("Failed to load events:", error);
             } finally {
@@ -81,14 +96,35 @@ export default function MyProfilePage() {
         fetchEvents();
     }, [user?.email]);
 
-    // Open edit modal
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+
+        if (!file) return;
+
+        if (!file.type.startsWith("image/")) {
+            toast.error("Please select a valid image!");
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("Image size must be less than 5MB!");
+            return;
+        }
+
+        setSelectedImage(file);
+        setImagePreview(URL.createObjectURL(file));
+    };
     const handleOpenEdit = () => {
         setFormData({
             name: user?.name || "",
             phoneNumber: user?.phoneNumber || "",
             location: user?.location || "",
+            image: user?.image || "",
             bio: user?.bio || "",
         });
+
+        setSelectedImage(null);
+        setImagePreview(user?.image || "");
 
         setIsEditOpen(true);
     };
@@ -103,20 +139,76 @@ export default function MyProfilePage() {
         try {
             setIsSaving(true);
 
+            let imageUrl = formData.image;
+
+            // Upload image to Cloudinary
+            if (selectedImage) {
+                const cloudName =
+                    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+
+                const uploadPreset =
+                    process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+                if (!cloudName || !uploadPreset) {
+                    throw new Error("Cloudinary configuration is missing!");
+                }
+
+                const uploadData = new FormData();
+
+                uploadData.append("file", selectedImage);
+                uploadData.append("upload_preset", uploadPreset);
+
+                const uploadResponse = await fetch(
+                    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+                    {
+                        method: "POST",
+                        body: uploadData,
+                    }
+                );
+
+                const uploadResult = await uploadResponse.json();
+
+                if (!uploadResponse.ok) {
+                    throw new Error(
+                        uploadResult.error?.message || "Image upload failed!"
+                    );
+                }
+
+                imageUrl = uploadResult.secure_url;
+            }
+
+
             const { error } = await authClient.updateUser({
                 name: formData.name.trim(),
+                image: imageUrl,
                 phoneNumber: formData.phoneNumber,
                 location: formData.location,
                 bio: formData.bio,
             });
 
-            if (error) throw new Error(error.message);
+            if (error) {
+                throw new Error(error.message);
+            }
+
+            setFormData((prev) => ({
+                ...prev,
+                image: imageUrl,
+            }));
+
+            setSelectedImage(null);
+            setImagePreview("");
 
             setIsEditOpen(false);
+
             toast.success("Profile updated successfully!");
         } catch (error) {
             console.error("Profile update failed:", error);
-            toast.error("Failed to update profile!");
+
+            toast.error(
+                error instanceof Error
+                    ? error.message
+                    : "Failed to update profile!"
+            );
         } finally {
             setIsSaving(false);
         }
@@ -193,6 +285,42 @@ export default function MyProfilePage() {
                         </div>
 
                         <div className="space-y-4">
+                            {/* Profile Picture Upload */}
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="h-24 w-24 overflow-hidden rounded-2xl bg-emerald-500">
+                                    {imagePreview ? (
+                                        <img
+                                            src={imagePreview}
+                                            alt="Profile Preview"
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="flex h-full items-center justify-center text-3xl font-bold text-white">
+                                            {formData.name?.[0]?.toUpperCase() || "U"}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="hidden"
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="rounded-xl border border-emerald-500 px-4 py-2 text-sm font-semibold text-emerald-600 transition hover:bg-emerald-500 hover:text-white"
+                                >
+                                    Choose Profile Picture
+                                </button>
+
+                                <p className="text-xs text-gray-500">
+                                    JPG, PNG or WEBP. Maximum 5MB.
+                                </p>
+                            </div>
                             {[
                                 { label: "Full Name", field: "name", type: "text" },
                                 { label: "Phone Number", field: "phoneNumber", type: "tel" },
@@ -245,7 +373,11 @@ export default function MyProfilePage() {
 
                         <div className="mt-6 flex justify-end gap-3">
                             <button
-                                onClick={() => setIsEditOpen(false)}
+                                onClick={() => {
+                                    setIsEditOpen(false);
+                                    setSelectedImage(null);
+                                    setImagePreview("");
+                                }}
                                 className="rounded-xl border px-5 py-3 text-sm dark:border-white/10 dark:text-white"
                             >
                                 Cancel

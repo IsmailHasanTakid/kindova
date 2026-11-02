@@ -1,7 +1,9 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import {
     CalendarDays,
     MapPin,
@@ -14,7 +16,12 @@ import {
 import { authClient } from "@/lib/auth-client";
 
 export default function CreateEventPage() {
+    const router = useRouter();
     const [thumbnailUrl, setThumbnailUrl] = useState("");
+    const [selectedImage, setSelectedImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState("");
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [eventDate, setEventDate] = useState("");
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
@@ -38,7 +45,26 @@ export default function CreateEventPage() {
 
     const sectionClass =
         "rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:p-7";
+    // for image select
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
 
+        if (!file) return;
+
+        if (!file.type.startsWith("image/")) {
+            toast.error("Please select a valid image!");
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("Image size must be less than 5MB!");
+            return;
+        }
+
+        setSelectedImage(file);
+        setImagePreview(URL.createObjectURL(file));
+        setThumbnailUrl("");
+    };
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -62,7 +88,55 @@ export default function CreateEventPage() {
             setLoading(false);
             return;
         }
+        let finalThumbnailUrl = thumbnailUrl;
 
+        if (selectedImage) {
+            try {
+                setUploadingImage(true);
+
+                const cloudName =
+                    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+
+                const uploadPreset =
+                    process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+                if (!cloudName || !uploadPreset) {
+                    throw new Error("Cloudinary configuration is missing!");
+                }
+
+                const uploadData = new FormData();
+
+                uploadData.append("file", selectedImage);
+                uploadData.append("upload_preset", uploadPreset);
+
+                const uploadResponse = await fetch(
+                    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+                    {
+                        method: "POST",
+                        body: uploadData,
+                    }
+                );
+
+                const uploadResult = await uploadResponse.json();
+
+                if (!uploadResponse.ok) {
+                    throw new Error(
+                        uploadResult.error?.message || "Image upload failed!"
+                    );
+                }
+
+                finalThumbnailUrl = uploadResult.secure_url;
+
+            } finally {
+                setUploadingImage(false);
+            }
+        }
+
+        if (!finalThumbnailUrl) {
+            toast.error("Please upload an image or provide an image URL!");
+            setLoading(false);
+            return;
+        }
         const eventData = {
             title: formData.get("title"),
             eventType: formData.get("eventType"),
@@ -71,25 +145,34 @@ export default function CreateEventPage() {
             eventTime: formData.get("eventTime"),
             location: formData.get("location"),
             fullAddress: formData.get("fullAddress"),
-            thumbnailUrl: formData.get("thumbnailUrl"),
+            thumbnailUrl: finalThumbnailUrl,
             volunteerLimit: Number(formData.get("volunteerLimit")) || null,
             requiredVolunteers: Number(formData.get("requiredVolunteers")) || null,
             contactNumber: formData.get("contactNumber"),
             additionalRequirements: formData.get("additionalRequirements"),
-            creatorEmail: session.user.email,
             creatorName: session.user.name,
             status: "pending",
             createdAt: new Date().toISOString(),
         };
 
         try {
-            const response = await fetch("http://localhost:5000/api/events", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(eventData),
-            });
+            const { data: tokenData, error: tokenError } = await authClient.token();
+
+            if (tokenError || !tokenData?.token) {
+                throw new Error("Authentication token not found. Please login again.");
+            }
+
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/api/events`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${tokenData.token}`,
+                    },
+                    body: JSON.stringify(eventData),
+                }
+            );
 
             const result = await response.json();
 
@@ -97,12 +180,10 @@ export default function CreateEventPage() {
                 throw new Error(result.message || "Failed to create event");
             }
 
-            setMessage("Your event has been created successfully!");
-            setMessageType("success");
+            toast.success("Your event has been created successfully!");
 
-            form.reset();
-            setThumbnailUrl("");
-            setEventDate("");
+            router.push("/upcoming-events");
+            router.refresh();
 
         } catch (error) {
             console.error("Event Creation Error:", error);
@@ -290,27 +371,65 @@ export default function CreateEventPage() {
                                 </div>
                             </div>
 
-                            <label className={labelClass}>Thumbnail Image URL *</label>
 
-                            <input
-                                type="url"
-                                name="thumbnailUrl"
-                                value={thumbnailUrl}
-                                onChange={(e) => setThumbnailUrl(e.target.value)}
-                                placeholder="https://example.com/image.jpg"
-                                className={inputClass}
-                                required
-                            />
+                            <label className={labelClass}>Upload Image from Device</label>
 
-                            {thumbnailUrl && (
-                                <div className="mt-4 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-                                    <img
-                                        src={thumbnailUrl}
-                                        alt="Event thumbnail preview"
-                                        className="h-52 w-full object-cover"
-                                    />
+                            <div className="space-y-4">
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="hidden"
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-emerald-500 px-4 py-4 text-sm font-semibold text-emerald-600 transition hover:bg-emerald-500/10"
+                                >
+                                    <ImagePlus size={20} />
+                                    Choose Image from Computer
+                                </button>
+
+                                <p className="text-center text-xs text-gray-500">
+                                    JPG, PNG or WEBP. Maximum 5MB.
+                                </p>
+
+                                <div className="flex items-center gap-3">
+                                    <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+                                    <span className="text-xs text-gray-500">OR</span>
+                                    <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
                                 </div>
-                            )}
+
+                                <label className={labelClass}>Thumbnail Image URL</label>
+
+                                <input
+                                    type="url"
+                                    name="thumbnailUrl"
+                                    value={thumbnailUrl}
+                                    onChange={(e) => {
+                                        setThumbnailUrl(e.target.value);
+                                        setSelectedImage(null);
+                                        setImagePreview("");
+                                        if (fileInputRef.current) {
+                                            fileInputRef.current.value = "";
+                                        }
+                                    }}
+                                    placeholder="https://example.com/image.jpg"
+                                    className={inputClass}
+                                />
+
+                                {(imagePreview || thumbnailUrl) && (
+                                    <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+                                        <img
+                                            src={imagePreview || thumbnailUrl}
+                                            alt="Event thumbnail preview"
+                                            className="h-52 w-full object-cover"
+                                        />
+                                    </div>
+                                )}
+                            </div>
                         </section>
 
                         {/* Volunteer Information */}
@@ -388,11 +507,15 @@ export default function CreateEventPage() {
 
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={loading || uploadingImage}
                             className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-4 font-bold text-white shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             <HeartHandshake size={20} />
-                            {loading ? "Creating Event..." : "Create Event"}
+                            {loading
+                                ? "Creating Event..."
+                                : uploadingImage
+                                    ? "Uploading Image..."
+                                    : "Create Event"}
                         </button>
 
                         <p className="text-center text-xs text-gray-500 dark:text-gray-400">

@@ -16,6 +16,7 @@ import {
     Loader2,
     AlertCircle,
     CheckCircle2,
+    Code2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
@@ -47,6 +48,26 @@ const SignInPage = () => {
             }
         } catch {
             toast.dismiss("google-login");
+            toast.error("Something went wrong. Please try again!");
+            setLoading(false);
+        }
+    };
+    const handleGithubLogin = async () => {
+        try {
+            setLoading(true);
+
+            const { error } = await authClient.signIn.social({
+                provider: "github",
+                callbackURL: "/",
+            });
+
+            if (error) {
+                toast.dismiss("github-login");
+                toast.error(error.message || "GitHub login failed!");
+                setLoading(false);
+            }
+        } catch {
+            toast.dismiss("github-login");
             toast.error("Something went wrong. Please try again!");
             setLoading(false);
         }
@@ -175,6 +196,17 @@ const SignInPage = () => {
                         >
                             <Globe size={20} className="text-emerald-600" />
                             Continue with Google
+                        </button>
+
+                        {/* GitHub */}
+                        <button
+                            type="button"
+                            onClick={handleGithubLogin}
+                            disabled={loading}
+                            className="mt-3 flex w-full items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white py-3.5 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/5 dark:text-gray-100 dark:hover:bg-white/10"
+                        >
+                            <Code2 size={20} />
+                            Continue with GitHub
                         </button>
 
                         {/* Divider */}

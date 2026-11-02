@@ -10,13 +10,16 @@ import {
     AlertCircle,
     CheckCircle2,
     Check,
+    Code2,
     Globe,
     Circle,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 const SignupPage = () => {
+    const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
 
     const [fullName, setFullName] = useState("");
@@ -46,6 +49,24 @@ const SignupPage = () => {
 
             if (error) {
                 toast.error(error.message || "Google signup failed!");
+                setLoading(false);
+            }
+        } catch {
+            toast.error("Something went wrong. Please try again.");
+            setLoading(false);
+        }
+    };
+    const handleGithubSignup = async () => {
+        try {
+            setLoading(true);
+
+            const { error } = await authClient.signIn.social({
+                provider: "github",
+                callbackURL: "/",
+            });
+
+            if (error) {
+                toast.error(error.message || "GitHub signup failed!");
                 setLoading(false);
             }
         } catch {
@@ -95,7 +116,10 @@ const SignupPage = () => {
                 return;
             }
 
-            setSuccess("Registration successful!");
+            setSuccess("Registration successful. Redirecting...");
+
+            router.push("/");
+            router.refresh();
         } catch {
             setError("Something went wrong. Please try again.");
         } finally {
@@ -200,6 +224,16 @@ const SignupPage = () => {
                         >
                             <Globe size={20} className="text-emerald-600" />
                             Continue with Google
+                        </button>
+                        {/* GitHub */}
+                        <button
+                            type="button"
+                            onClick={handleGithubSignup}
+                            disabled={loading}
+                            className="mt-3 flex w-full items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white py-3.5 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/5 dark:text-gray-100 dark:hover:bg-white/10"
+                        >
+                            <Code2 size={20} />
+                            Continue with GitHub
                         </button>
                         {/* Form */}
                         <form onSubmit={handleSubmit} className="mt-8 space-y-5">

@@ -7,8 +7,9 @@ import { CalendarDays, Plus, Search } from "lucide-react";
 
 import CategoryTabs from "./components/CategoryTabs";
 import PublicEventCard, { type PublicEvent } from "./components/PublicEventCard";
+import toast from "react-hot-toast";
 
-const API_URL = "http://localhost:5000/api/events";
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/events`;
 
 const CATEGORIES = [
     "All",
@@ -66,7 +67,7 @@ export default function UpcomingEventsPage() {
             } catch (err) {
                 if (controller.signal.aborted) return;
 
-                setError("Events load করা যায়নি। আবার চেষ্টা করুন।");
+                toast.error("Events load করা যায়নি। আবার চেষ্টা করুন।");
 
             } finally {
                 if (!controller.signal.aborted) {

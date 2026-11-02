@@ -126,7 +126,7 @@ export default function RecentEvents() {
     const FeaturedCard = ({ event }: { event: EventType }) => (
         <Link
             href={`/events/${event._id}`}
-            className="group relative block min-h-[440px] overflow-hidden rounded-3xl border border-gray-200 dark:border-white/10"
+            className="group relative block min-h-[440px] overflow-hidden rounded-3xl border border-gray-200 bg-white dark:border-white/10 dark:bg-gray-900"
         >
             <img
                 src={event.thumbnailUrl || "/images/event-placeholder.jpg"}
@@ -269,7 +269,7 @@ export default function RecentEvents() {
     );
 
     return (
-        <section className="relative px-5 py-20 sm:px-8 lg:px-12">
+        <section className="relative bg-white px-5 py-20 transition-colors duration-300 dark:bg-gray-950 sm:px-8 lg:px-12">
             <div className="mx-auto max-w-7xl">
 
                 {/* Section Heading */}
@@ -298,7 +298,7 @@ export default function RecentEvents() {
 
                     <Link
                         href="/explore"
-                        className="group flex w-fit items-center gap-2 rounded-xl border border-emerald-500/30 px-5 py-3 text-sm font-bold text-emerald-600 transition hover:bg-emerald-500 hover:text-white dark:text-emerald-400"
+                        className="group flex w-fit items-center gap-2 rounded-xl border border-emerald-500/30 px-5 py-3 text-sm font-bold text-emerald-600 transition hover:bg-emerald-500 hover:text-white dark:border-emerald-400/30 dark:text-emerald-400 dark:hover:bg-emerald-500 dark:hover:text-white"
                     >
                         Explore All Events
                         <ArrowRight
