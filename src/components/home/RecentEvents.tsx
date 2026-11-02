@@ -297,7 +297,7 @@ export default function RecentEvents() {
                     </div>
 
                     <Link
-                        href="/events"
+                        href="/explore"
                         className="group flex w-fit items-center gap-2 rounded-xl border border-emerald-500/30 px-5 py-3 text-sm font-bold text-emerald-600 transition hover:bg-emerald-500 hover:text-white dark:text-emerald-400"
                     >
                         Explore All Events

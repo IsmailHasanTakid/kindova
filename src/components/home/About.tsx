@@ -33,18 +33,14 @@ export default function About() {
     return (
         <section
             id="about"
-            className="relative overflow-hidden bg-white py-20 transition-colors duration-300 dark:bg-[#080D0B] sm:py-24"
+            className="relative overflow-hidden bg-white py-10 transition-colors duration-300 dark:bg-[#080D0B] sm:py-10"
         >
-            {/* Background Decoration */}
-            <div className="pointer-events-none absolute -left-40 top-20 h-80 w-80 rounded-full bg-emerald-500/10 blur-[120px]" />
-            <div className="pointer-events-none absolute -right-40 bottom-0 h-80 w-80 rounded-full bg-teal-500/10 blur-[120px]" />
 
             <div className="relative mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
 
-                {/* Section Heading */}
                 <div className="mb-14 text-center">
                     <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400">
-                        <Sparkles size={14} />
+
                         About Kindova
                     </span>
 
@@ -151,7 +147,7 @@ export default function About() {
 
                         {/* CTA */}
                         <Link
-                            href="/events"
+                            href="/explore"
                             className="group inline-flex items-center gap-3 rounded-xl bg-emerald-500 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-1 hover:bg-emerald-600"
                         >
                             Explore Our Community

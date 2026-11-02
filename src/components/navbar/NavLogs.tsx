@@ -24,7 +24,6 @@ const profileLinks = [
 
 type Props = { variant?: "desktop" | "mobile" };
 
-// Avatar: image না থাকলে নামের প্রথম অক্ষর দেখাবে
 const Avatar = ({
     name,
     image,
@@ -127,6 +126,7 @@ const NavLogs = ({ variant = "desktop" }: Props) => {
     }
 
     const user = session.user;
+    console.log("USER IMAGE:", user.image);
 
     /* ---------- Mobile: inline profile panel ---------- */
     if (isMobile) {
@@ -305,7 +305,7 @@ const NavLogs = ({ variant = "desktop" }: Props) => {
 
                 <div className="mx-4 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent dark:via-white/10" />
 
-    
+
                 <div className="p-2">
                     <button
                         onClick={handleLogout}

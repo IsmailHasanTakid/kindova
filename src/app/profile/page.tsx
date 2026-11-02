@@ -1,0 +1,405 @@
+
+"use client";
+import toast from "react-hot-toast";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import {
+    UserRound,
+    CalendarPlus,
+    CalendarCheck,
+    Users,
+    MapPin,
+    Mail,
+    Pencil,
+    ArrowRight,
+    Loader2,
+    Phone,
+} from "lucide-react";
+
+import { authClient } from "@/lib/auth-client";
+
+const API_URL = "http://localhost:5000";
+
+type EventData = {
+    _id: string;
+    title: string;
+};
+
+export default function MyProfilePage() {
+    const { data: session, isPending } = authClient.useSession();
+    const user = session?.user;
+
+    const [createdEvents, setCreatedEvents] = useState<EventData[]>([]);
+    const [joinedEvents, setJoinedEvents] = useState<EventData[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const [formData, setFormData] = useState({
+        name: "",
+        phoneNumber: "",
+        location: "",
+        bio: "",
+    });
+
+    // Load user information
+    useEffect(() => {
+        if (!user) return;
+
+        setFormData({
+            name: user.name || "",
+            phoneNumber: user.phoneNumber || "",
+            location: user.location || "",
+            bio: user.bio || "",
+        });
+    }, [user]);
+
+    // Load event statistics
+    useEffect(() => {
+        if (!user?.email) return;
+
+        const fetchEvents = async () => {
+            try {
+                const [createdRes, joinedRes] = await Promise.all([
+                    fetch(`${API_URL}/api/events/my-events?email=${encodeURIComponent(user.email)}`),
+                    fetch(`${API_URL}/api/events/joined?email=${encodeURIComponent(user.email)}`),
+                ]);
+
+                const createdData = await createdRes.json();
+                const joinedData = await joinedRes.json();
+
+                if (createdData.success) setCreatedEvents(createdData.events);
+                if (joinedData.success) setJoinedEvents(joinedData.events);
+            } catch (error) {
+                console.error("Failed to load events:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEvents();
+    }, [user?.email]);
+
+    // Open edit modal
+    const handleOpenEdit = () => {
+        setFormData({
+            name: user?.name || "",
+            phoneNumber: user?.phoneNumber || "",
+            location: user?.location || "",
+            bio: user?.bio || "",
+        });
+
+        setIsEditOpen(true);
+    };
+
+    // Save profile
+    const handleSaveProfile = async () => {
+        if (!formData.name.trim()) {
+            toast.error("Please enter your name!");
+            return;
+        }
+
+        try {
+            setIsSaving(true);
+
+            const { error } = await authClient.updateUser({
+                name: formData.name.trim(),
+                phoneNumber: formData.phoneNumber,
+                location: formData.location,
+                bio: formData.bio,
+            });
+
+            if (error) throw new Error(error.message);
+
+            setIsEditOpen(false);
+            toast.success("Profile updated successfully!");
+        } catch (error) {
+            console.error("Profile update failed:", error);
+            toast.error("Failed to update profile!");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    if (isPending) {
+        return (
+            <div className="flex min-h-[60vh] items-center justify-center">
+                <Loader2 className="animate-spin text-emerald-500" size={32} />
+            </div>
+        );
+    }
+
+    if (!user) {
+        return (
+            <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
+                <UserRound size={48} className="text-emerald-500" />
+                <h2 className="text-2xl font-bold dark:text-white">Login Required</h2>
+                <p className="text-gray-500">Please login to view your profile.</p>
+                <Link href="/login" className="rounded-xl bg-emerald-500 px-6 py-3 text-white">
+                    Login
+                </Link>
+            </div>
+        );
+    }
+
+    const statistics = [
+        {
+            title: "Created Events",
+            description: "Events created by you",
+            count: createdEvents.length,
+            icon: CalendarPlus,
+            color: "emerald",
+        },
+        {
+            title: "Manage Events",
+            description: "Manage your created events",
+            count: createdEvents.length,
+            icon: CalendarCheck,
+            color: "blue",
+            href: "/manage-events",
+        },
+        {
+            title: "Joined Events",
+            description: "Events you have joined",
+            count: joinedEvents.length,
+            icon: Users,
+            color: "violet",
+            href: "/joined-events",
+        },
+    ];
+
+    const colors: Record<string, string> = {
+        emerald: "bg-emerald-500/10 text-emerald-500",
+        blue: "bg-blue-500/10 text-blue-500",
+        violet: "bg-violet-500/10 text-violet-500",
+    };
+
+    return (
+        <main className="min-h-screen bg-gray-50 px-4 py-10 dark:bg-[#080D0B] sm:px-6 lg:px-8">
+
+            {/* Edit Profile Modal */}
+            {isEditOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm">
+                    <div className="w-full max-w-lg rounded-3xl bg-white p-6 dark:bg-[#101A16]">
+
+                        <div className="mb-6 flex justify-between">
+                            <h2 className="text-xl font-bold dark:text-white">
+                                Edit Profile
+                            </h2>
+                            <button onClick={() => setIsEditOpen(false)} className="text-2xl text-gray-500">
+                                &times;
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            {[
+                                { label: "Full Name", field: "name", type: "text" },
+                                { label: "Phone Number", field: "phoneNumber", type: "tel" },
+                                { label: "Location", field: "location", type: "text" },
+                            ].map((item) => (
+                                <div key={item.field}>
+                                    <label className="mb-2 block text-sm font-semibold dark:text-gray-300">
+                                        {item.label}
+                                    </label>
+                                    <input
+                                        type={item.type}
+                                        value={formData[item.field as keyof typeof formData]}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                [item.field]: e.target.value,
+                                            })
+                                        }
+                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:border-emerald-500 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                                    />
+                                </div>
+                            ))}
+
+                            <div>
+                                <label className="mb-2 block text-sm font-semibold dark:text-gray-300">
+                                    Email Address
+                                </label>
+                                <input
+                                    value={user.email}
+                                    disabled
+                                    className="w-full rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-gray-500 dark:border-white/10 dark:bg-white/5"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="mb-2 block text-sm font-semibold dark:text-gray-300">
+                                    Bio
+                                </label>
+                                <textarea
+                                    rows={3}
+                                    value={formData.bio}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, bio: e.target.value })
+                                    }
+                                    placeholder="Write something about yourself..."
+                                    className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:border-emerald-500 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mt-6 flex justify-end gap-3">
+                            <button
+                                onClick={() => setIsEditOpen(false)}
+                                className="rounded-xl border px-5 py-3 text-sm dark:border-white/10 dark:text-white"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSaveProfile}
+                                disabled={isSaving}
+                                className="rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white disabled:opacity-60"
+                            >
+                                {isSaving ? "Saving..." : "Save Changes"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <div className="mx-auto max-w-6xl">
+
+                {/* Page Heading */}
+                <div className="mb-8">
+                    <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-emerald-600">
+                        My Account
+                    </p>
+                    <h1 className="text-3xl font-black dark:text-white sm:text-4xl">
+                        My Profile
+                    </h1>
+                    <p className="mt-2 text-gray-500 dark:text-gray-400">
+                        Manage your personal information and community activities.
+                    </p>
+                </div>
+
+                {/* Profile Header */}
+                <section className="flex flex-col gap-6 rounded-3xl border border-gray-200 bg-white p-6 dark:border-white/10 dark:bg-[#101A16] sm:flex-row sm:items-center sm:p-8">
+                    <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-3xl bg-emerald-500 text-3xl font-bold text-white">
+                        {user.image ? (
+                            <img src={user.image} alt={user.name} className="h-full w-full object-cover" />
+                        ) : (
+                            user.name?.[0]?.toUpperCase() || "U"
+                        )}
+                    </div>
+
+                    <div className="flex-1">
+                        <h2 className="text-2xl font-bold dark:text-white">
+                            {user.name}
+                        </h2>
+                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                            <Mail size={15} className="mr-2 inline text-emerald-500" />
+                            {user.email}
+                        </p>
+                    </div>
+
+                    <button
+                        onClick={handleOpenEdit}
+                        className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-600"
+                    >
+                        <Pencil size={16} />
+                        Edit Profile
+                    </button>
+                </section>
+
+                {/* Personal Information */}
+                <section className="mt-8">
+                    <h2 className="mb-4 text-xl font-bold dark:text-white">
+                        Personal Information
+                    </h2>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        {[
+                            { label: "Full Name", value: user.name, icon: UserRound },
+                            { label: "Email Address", value: user.email, icon: Mail },
+                            { label: "Phone Number", value: user.phoneNumber, icon: Phone },
+                            { label: "Location", value: user.location, icon: MapPin },
+                        ].map((item) => {
+                            const Icon = item.icon;
+                            return (
+                                <div key={item.label} className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-[#101A16]">
+                                    <p className="mb-2 text-xs font-semibold uppercase text-gray-400">
+                                        {item.label}
+                                    </p>
+                                    <div className="flex items-center gap-3">
+                                        <Icon size={20} className="text-emerald-500" />
+                                        <p className="font-semibold dark:text-white">
+                                            {item.value || "Not added"}
+                                        </p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    <div className="mt-4 rounded-2xl border border-gray-200 bg-white p-5 dark:border-white/10 dark:bg-[#101A16]">
+                        <p className="mb-2 text-xs font-semibold uppercase text-gray-400">
+                            Bio
+                        </p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                            {user.bio || "No bio added yet."}
+                        </p>
+                    </div>
+                </section>
+
+                {/* Event Statistics */}
+                <section className="mt-10">
+                    <h2 className="mb-5 text-xl font-bold dark:text-white">
+                        Your Activities
+                    </h2>
+
+                    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                        {statistics.map((item) => {
+                            const Icon = item.icon;
+
+                            const card = (
+                                <div className="rounded-2xl border border-gray-200 bg-white p-6 transition hover:-translate-y-1 hover:shadow-lg dark:border-white/10 dark:bg-[#101A16]">
+                                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${colors[item.color]}`}>
+                                        <Icon size={23} />
+                                    </div>
+
+                                    <p className="mt-6 text-4xl font-black dark:text-white">
+                                        {loading ? "..." : item.count}
+                                    </p>
+                                    <h3 className="mt-2 font-bold dark:text-white">
+                                        {item.title}
+                                    </h3>
+                                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                        {item.description}
+                                    </p>
+                                    {item.href && (
+                                        <ArrowRight size={18} className="mt-3 text-emerald-500" />
+                                    )}
+                                </div>
+                            );
+
+                            return item.href ? (
+                                <Link href={item.href} key={item.title}>
+                                    {card}
+                                </Link>
+                            ) : (
+                                <div key={item.title}>{card}</div>
+                            );
+                        })}
+                    </div>
+                </section>
+
+                {/* Footer */}
+                <div className="mt-10 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-5 text-center">
+                    <MapPin className="mx-auto mb-2 text-emerald-500" size={22} />
+                    <p className="font-semibold dark:text-gray-200">
+                        Every small act of kindness creates a bigger impact.
+                    </p>
+                    <p className="mt-1 text-sm text-gray-500">
+                        Thank you for being a part of Kindova.
+                    </p>
+                </div>
+
+            </div>
+        </main>
+    );
+}

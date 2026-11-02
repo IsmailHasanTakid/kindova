@@ -3,24 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-    HeartHandshake,
-    UserRound,
-    Mail,
-    Lock,
-    Eye,
-    EyeOff,
-    ArrowRight,
-    Leaf,
-    Image as ImageIcon,
+    HeartHandshake, UserRound, Mail, Lock, Eye, EyeOff, ArrowRight, Leaf, Image as ImageIcon,
     ShieldCheck,
     Sparkles,
     Loader2,
     AlertCircle,
     CheckCircle2,
     Check,
+    Globe,
     Circle,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import toast from "react-hot-toast";
 
 const SignupPage = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -41,7 +35,24 @@ const SignupPage = () => {
         { label: "One lowercase letter", ok: /[a-z]/.test(password) },
     ];
     const passedRules = rules.filter((r) => r.ok).length;
+    const handleGoogleSignup = async () => {
+        try {
+            setLoading(true);
 
+            const { error } = await authClient.signIn.social({
+                provider: "google",
+                callbackURL: "/",
+            });
+
+            if (error) {
+                toast.error(error.message || "Google signup failed!");
+                setLoading(false);
+            }
+        } catch {
+            toast.error("Something went wrong. Please try again.");
+            setLoading(false);
+        }
+    };
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -181,7 +192,15 @@ const SignupPage = () => {
                         <p className="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
                             Join KINDOVA and start making a positive impact.
                         </p>
-
+                        <button
+                            type="button"
+                            onClick={handleGoogleSignup}
+                            disabled={loading}
+                            className="mt-8 flex w-full items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white py-3.5 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/5 dark:text-gray-100 dark:hover:bg-white/10"
+                        >
+                            <Globe size={20} className="text-emerald-600" />
+                            Continue with Google
+                        </button>
                         {/* Form */}
                         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
                             {/* Full name */}

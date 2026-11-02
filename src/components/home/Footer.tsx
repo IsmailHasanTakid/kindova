@@ -15,7 +15,7 @@ const footerLinks = [
         title: "Explore",
         links: [
             { name: "Home", href: "/" },
-            { name: "All Events", href: "/events" },
+            { name: "All Events", href: "/explore" },
             { name: "About Us", href: "/about" },
             { name: "Our Community", href: "/community" },
         ],

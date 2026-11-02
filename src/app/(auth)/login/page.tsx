@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import toast from "react-hot-toast";
 
 const SignInPage = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +31,26 @@ const SignInPage = () => {
     const [loading, setLoading] = useState(false);
 
     const router = useRouter();
+    const handleGoogleLogin = async () => {
+        try {
+            setLoading(true);
 
+            const { error } = await authClient.signIn.social({
+                provider: "google",
+                callbackURL: "/",
+            });
+
+            if (error) {
+                toast.dismiss("google-login");
+                toast.error(error.message || "Google login failed!");
+                setLoading(false);
+            }
+        } catch {
+            toast.dismiss("google-login");
+            toast.error("Something went wrong. Please try again!");
+            setLoading(false);
+        }
+    };
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError("");
@@ -149,7 +169,9 @@ const SignInPage = () => {
                         {/* Google */}
                         <button
                             type="button"
-                            className="mt-8 flex w-full items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white py-3.5 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/20 dark:border-white/10 dark:bg-white/5 dark:text-gray-100 dark:hover:bg-white/10"
+                            onClick={handleGoogleLogin}
+                            disabled={loading}
+                            className="mt-8 flex w-full items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white py-3.5 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/5 dark:text-gray-100 dark:hover:bg-white/10"
                         >
                             <Globe size={20} className="text-emerald-600" />
                             Continue with Google

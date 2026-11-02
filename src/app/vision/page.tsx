@@ -107,7 +107,7 @@ export default function VisionPage() {
 
                             {/* Primary Button */}
                             <Link
-                                href="/events"
+                                href="/explore"
                                 className="group inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition-all duration-300 hover:-translate-y-1 hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/25"
                             >
                                 Explore Our Community

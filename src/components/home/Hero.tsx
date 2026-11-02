@@ -43,7 +43,6 @@ export default function Hero() {
 
             <div className="relative mx-auto flex h-[85svh] min-h-[580px] max-h-[780px] max-w-7xl items-end justify-center overflow-hidden rounded-2xl text-white sm:min-h-[650px] sm:rounded-3xl lg:min-h-[640px]">
 
-                {/* Background Images (next/image: ডিভাইস অনুযায়ী HD আকার নিজে বেছে নেয়) */}
                 {images.map((src, index) => (
                     <div
                         key={src}
@@ -65,7 +64,6 @@ export default function Hero() {
                     </div>
                 ))}
 
-                {/* Overlay: উপরের দিক প্রায় স্বচ্ছ, শুধু নিচে লেখার জায়গায় গাঢ় */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
                 <div className="relative z-10 w-full px-3 pb-7 text-center sm:px-8 sm:pb-10 lg:px-12 lg:pb-12">
@@ -85,7 +83,7 @@ export default function Hero() {
                     <div className="mx-auto mt-5 flex max-w-sm flex-col justify-center gap-3 sm:mt-7 sm:max-w-none sm:flex-row">
 
                         <Link
-                            href="/events"
+                            href="/explore"
                             className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold transition duration-300 hover:bg-emerald-400 sm:px-7 sm:py-3.5 sm:text-base"
                         >
                             Explore Events
@@ -93,16 +91,15 @@ export default function Hero() {
                         </Link>
 
                         <Link
-                            href="/volunteer"
+                            href="/create-event"
                             className="flex items-center justify-center gap-2 rounded-xl border border-white/40 bg-white/10 px-6 py-3 text-sm font-semibold backdrop-blur-md transition duration-300 hover:bg-white/20 sm:px-7 sm:py-3.5 sm:text-base"
                         >
                             <HeartHandshake size={18} />
-                            Become a Volunteer
+                            Create Event
                         </Link>
 
                     </div>
 
-                    {/* Statistics */}
                     <div className="mx-auto mt-6 grid max-w-2xl grid-cols-2 gap-2 sm:mt-8 sm:grid-cols-4 sm:gap-3">
 
                         {statistics.map((item) => (
