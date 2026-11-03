@@ -65,13 +65,7 @@ export default function JoinedEventsPage() {
                     throw new Error(data.message || "Failed to load events");
                 }
 
-                const sortedEvents = [...data.events].sort(
-                    (a, b) =>
-                        new Date(a.eventDate).getTime() -
-                        new Date(b.eventDate).getTime()
-                );
-
-                setEvents(sortedEvents);
+                setEvents(data.events);
             } catch (err) {
                 setError(
                     err instanceof Error

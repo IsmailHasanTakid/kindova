@@ -30,7 +30,7 @@ export function proxy(request: NextRequest) {
     // Redirect unauthenticated users
     if (isProtectedRoute && !sessionCookie) {
         return NextResponse.redirect(
-            new URL("/signup", request.url)
+            new URL("/login", request.url)
         );
     }
 

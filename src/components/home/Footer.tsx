@@ -160,7 +160,7 @@ export default function Footer() {
 
                 </div>
 
-                {/* Bottom Bar */}
+    
                 <div className="flex flex-col items-center justify-between gap-4 border-t border-gray-200 py-5 dark:border-white/10 sm:flex-row">
 
                     <p className="text-center text-xs text-gray-500">
@@ -194,7 +194,7 @@ export default function Footer() {
                     </button>
                 </div>
 
-                {/* Brand Message */}
+    
                 <div className="border-t border-gray-100 py-3 text-center dark:border-white/5">
                     <p className="text-[10px] font-medium tracking-[2.5px] text-gray-400 dark:text-gray-600">
                         MADE WITH <Heart size={10} className="mx-1 inline fill-emerald-500 text-emerald-500" /> FOR HUMANITY
