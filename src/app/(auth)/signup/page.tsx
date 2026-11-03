@@ -216,11 +216,15 @@ const SignupPage = () => {
                         <p className="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
                             Join KINDOVA and start making a positive impact.
                         </p>
+
+
+
+                        {/* google diye login problem hocce tai eta ekhon apatoto off rakhlam */}
                         <button
                             type="button"
                             onClick={handleGoogleSignup}
                             disabled={loading}
-                            className="mt-8 flex w-full items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white py-3.5 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/5 dark:text-gray-100 dark:hover:bg-white/10"
+                            className="hidden"
                         >
                             <Globe size={20} className="text-emerald-600" />
                             Continue with Google
