@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -31,7 +31,7 @@ const navLinks = [
     },
 ];
 
-const Navbar = () => {
+const NavbarContent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [progress, setProgress] = useState(0);
@@ -76,12 +76,10 @@ const Navbar = () => {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    // Close menu after navigation
     useEffect(() => {
         setIsMenuOpen(false);
     }, [pathname]);
 
-    // Lock body scroll and close with Escape
     useEffect(() => {
         document.body.style.overflow = isMenuOpen ? "hidden" : "";
 
@@ -296,4 +294,10 @@ const Navbar = () => {
     );
 };
 
-export default Navbar;
+export default function Navbar() {
+    return (
+        <Suspense fallback={<div className="h-[72px]" />}>
+            <NavbarContent />
+        </Suspense>
+    );
+}

@@ -31,7 +31,7 @@ type EventMetaProps = {
     light?: boolean;
 };
 
-const API_URL = "http://localhost:5000/api/events/recent";
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/events/recent`;
 
 const taglines: Record<string, string> = {
     Environment: "Protect nature, create a greener future.",

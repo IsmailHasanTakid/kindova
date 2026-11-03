@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
@@ -28,14 +28,20 @@ export default function CreateEventPage() {
     const [messageType, setMessageType] = useState<"success" | "error">("success");
     const { data: session } = authClient.useSession();
 
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const [minDate, setMinDate] = useState("");
 
-    const minDate = [
-        tomorrow.getFullYear(),
-        String(tomorrow.getMonth() + 1).padStart(2, "0"),
-        String(tomorrow.getDate()).padStart(2, "0"),
-    ].join("-");
+    useEffect(() => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const formattedDate = [
+            tomorrow.getFullYear(),
+            String(tomorrow.getMonth() + 1).padStart(2, "0"),
+            String(tomorrow.getDate()).padStart(2, "0"),
+        ].join("-");
+
+        setMinDate(formattedDate);
+    }, []);
 
     const inputClass =
         "w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500";

@@ -20,7 +20,7 @@ type PreviousEvent = {
     thumbnailUrl: string;
 };
 
-const API_URL = "http://localhost:5000/api/events/previous";
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/events/previous`;
 
 export default function PreviousEvents() {
     const [events, setEvents] = useState<PreviousEvent[]>([]);

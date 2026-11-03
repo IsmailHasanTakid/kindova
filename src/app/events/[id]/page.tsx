@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -47,7 +47,7 @@ type EventDetails = {
     }[];
 };
 
-const API_URL = "http://localhost:5000/api/events";
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/events`;
 
 const taglines: Record<string, string> = {
     "Blood Donation": "একফোঁটা রক্ত, একটি জীবনের আশা।",
@@ -115,7 +115,7 @@ const getCountdown = (dateStr: string) => {
 const cardClass =
     "rounded-3xl border border-gray-200 p-5 dark:border-white/10 sm:p-6";
 
-export default function EventDetailsPage() {
+function EventDetailsContent() {
     const { id } = useParams<{ id: string }>();
     const router = useRouter();
     const { data: session } = authClient.useSession();
@@ -152,7 +152,8 @@ export default function EventDetailsPage() {
 
                 setIsJoined(
                     data.event.joinedUsers?.some(
-                        (user) => user.email === email
+                        (user: NonNullable<EventDetails["joinedUsers"]>[number]) =>
+                            user.email === email
                     ) || false
                 );
             } catch (err) {
@@ -525,5 +526,20 @@ export default function EventDetailsPage() {
                 </div>
             </div>
         </main>
+    );
+}
+
+export default function EventDetailsPage() {
+    return (
+        <Suspense
+            fallback={
+                <main className="flex min-h-[70vh] items-center justify-center gap-2 text-gray-500 dark:text-gray-400">
+                    <Loader2 className="animate-spin" size={22} />
+                    Loading event details...
+                </main>
+            }
+        >
+            <EventDetailsContent />
+        </Suspense>
     );
 }

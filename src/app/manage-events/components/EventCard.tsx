@@ -8,7 +8,6 @@ import {
     Pencil,
     Trash2,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 export type EventItem = {
     _id: string;
@@ -30,6 +29,7 @@ export type EventItem = {
 type EventCardProps = {
     event: EventItem;
     onEdit: (event: EventItem) => void;
+    onView: (event: EventItem) => void;
     onDelete: (id: string) => void;
     deleting: boolean;
 };
@@ -50,9 +50,9 @@ const EventCard = ({
     event,
     onEdit,
     onDelete,
+    onView,
     deleting,
 }: EventCardProps) => {
-    const router = useRouter();
 
     const tagline =
         categoryTaglines[event.eventType] ||
@@ -78,10 +78,10 @@ const EventCard = ({
                 <div className="absolute right-3 top-3">
                     <span
                         className={`rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ${event.status === "completed"
-                                ? "bg-blue-100 text-blue-700"
-                                : event.status === "cancelled"
-                                    ? "bg-red-100 text-red-700"
-                                    : "bg-emerald-100 text-emerald-700"
+                            ? "bg-blue-100 text-blue-700"
+                            : event.status === "cancelled"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-emerald-100 text-emerald-700"
                             }`}
                     >
                         {event.status || "Active"}
@@ -140,7 +140,7 @@ const EventCard = ({
                 {/* Actions */}
                 <div className="mt-5 grid grid-cols-3 gap-2">
                     <button
-                        onClick={() => router.push(`/events/${event._id}`)}
+                        onClick={() => onView(event)}
                         className="flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 py-2.5 text-sm font-medium text-gray-700 transition hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-700 dark:border-white/10 dark:text-gray-300 dark:hover:border-emerald-400 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
                     >
                         <Eye size={15} />

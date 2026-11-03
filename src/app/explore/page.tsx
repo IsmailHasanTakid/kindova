@@ -20,7 +20,7 @@ type EventType = {
 
 type FilterType = "all" | "upcoming" | "previous";
 
-const API_URL = "http://localhost:5000/api/events";
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/events`;
 
 const filters = [
     { id: "all", label: "All Events", icon: Compass },
@@ -28,10 +28,7 @@ const filters = [
     { id: "previous", label: "Previous", icon: History },
 ] as const;
 
-const getToday = () =>
-    new Intl.DateTimeFormat("en-CA", {
-        timeZone: "Asia/Dhaka",
-    }).format(new Date());
+
 
 const formatDate = (date: string) => {
     if (!date) return "Date TBA";
@@ -51,7 +48,15 @@ function ExplorePage() {
     const [filter, setFilter] = useState<FilterType>("all");
     const [search, setSearch] = useState("");
 
-    const today = getToday();
+    const [today, setToday] = useState("");
+
+    useEffect(() => {
+        const currentDate = new Intl.DateTimeFormat("en-CA", {
+            timeZone: "Asia/Dhaka",
+        }).format(new Date());
+
+        setToday(currentDate);
+    }, []);
 
     useEffect(() => {
         const fetchEvents = async () => {
