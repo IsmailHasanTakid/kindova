@@ -10,7 +10,8 @@ import PublicEventCard, { type PublicEvent } from "./components/PublicEventCard"
 import toast from "react-hot-toast";
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/events`;
-
+const isUpcoming = (e: PublicEvent) =>
+    new Date(`${e.eventDate}T${e.eventTime || "00:00"}:00+06:00`) >= new Date();
 const CATEGORIES = [
     "All",
     "Blood Donation",
@@ -41,7 +42,7 @@ export default function UpcomingEventsPage() {
                 setError("");
 
                 const params = new URLSearchParams({
-                    upcoming: "true",
+                    status: "upcoming",
                 });
 
                 if (category !== "All") {
@@ -51,9 +52,9 @@ export default function UpcomingEventsPage() {
                 if (search.trim()) {
                     params.set("search", search.trim());
                 }
-
                 const res = await fetch(`${API_URL}?${params}`, {
                     signal: controller.signal,
+                    cache: "no-store",
                 });
 
                 const data = await res.json();
@@ -62,7 +63,7 @@ export default function UpcomingEventsPage() {
                     throw new Error("Failed to load events");
                 }
 
-                setEvents(data.events);
+                setEvents(data.events.filter(isUpcoming));
 
             } catch (err) {
                 if (controller.signal.aborted) return;
