@@ -286,7 +286,7 @@ export default function RecentEvents() {
                         <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl lg:text-5xl dark:text-white">
                             Discover{" "}
                             <span className="bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-transparent">
-                                Recent Events
+                                Upcoming Events
                             </span>
                         </h2>
 
