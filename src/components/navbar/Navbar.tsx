@@ -118,8 +118,8 @@ const NavbarContent = () => {
                 {/* Navbar */}
                 <nav
                     className={`relative border-b backdrop-blur-2xl transition-all duration-300 ${scrolled
-                        ? "border-gray-200/80 bg-white/95 shadow-lg shadow-gray-900/5 dark:border-white/10 dark:bg-gray-950/95"
-                        : "border-gray-200/60 bg-white/80 dark:border-white/10 dark:bg-gray-950/75"
+                        ? "border-gray-200/80 bg-white/95 shadow-lg shadow-gray-900/5 dark:border-white/[0.07] dark:bg-[#05090d]/95"
+                        : "border-gray-200/60 bg-white/80 dark:border-white/[0.07] dark:bg-[#05090d]/85"
                         }`}
                 >
                     <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
@@ -130,7 +130,7 @@ const NavbarContent = () => {
                             className="group flex shrink-0 items-center gap-2.5"
                         >
                             <div className="rounded-xl bg-gradient-to-tr from-emerald-400 via-teal-400 to-cyan-500 p-[2px] shadow-lg shadow-emerald-500/20 transition duration-300 group-hover:rotate-3 group-hover:scale-105">
-                                <div className="relative h-10 w-10 overflow-hidden rounded-[10px] bg-white dark:bg-gray-900">
+                                <div className="relative h-10 w-10 overflow-hidden rounded-[10px] bg-white dark:bg-[#0b1215]">
                                     <Image
                                         src="/logo.jpeg"
                                         alt="Kindova logo"
@@ -158,7 +158,7 @@ const NavbarContent = () => {
 
                         {/* Desktop Navigation */}
                         <div className="hidden md:flex">
-                            <div className="flex items-center gap-1 rounded-2xl border border-gray-200/70 bg-gray-100/70 p-1 dark:border-white/5 dark:bg-white/5">
+                            <div className="flex items-center gap-1 rounded-2xl border border-gray-200/70 bg-gray-100/70 p-1 dark:border-white/[0.07] dark:bg-white/[0.035]">
                                 {navLinks.map((link) => {
                                     const active = isActive(link.href);
                                     const Icon = link.icon;
@@ -168,7 +168,7 @@ const NavbarContent = () => {
                                             key={link.name}
                                             href={link.href}
                                             className={`relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-300 ${active
-                                                ? "bg-white text-emerald-600 shadow-sm dark:bg-gray-800 dark:text-emerald-400"
+                                                ? "bg-white text-emerald-600 shadow-sm dark:bg-[#14201f] dark:text-emerald-400"
                                                 : "text-gray-600 hover:bg-white/70 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-emerald-400"
                                                 }`}
                                         >
@@ -238,7 +238,7 @@ const NavbarContent = () => {
                         }`}
                 >
                     <div className="min-h-0 overflow-hidden">
-                        <div className="max-h-[calc(100svh-72px)] overflow-y-auto overscroll-contain border-b border-gray-200/80 bg-white/95 p-4 shadow-2xl shadow-black/10 backdrop-blur-2xl dark:border-white/10 dark:bg-gray-950/95">
+                        <div className="max-h-[calc(100svh-72px)] overflow-y-auto overscroll-contain border-b border-gray-200/80 bg-white/95 p-4 shadow-2xl shadow-black/10 backdrop-blur-2xl dark:border-white/[0.07] dark:bg-[#05090d]/95">
 
                             {/* Mobile Links */}
                             <div className="space-y-1.5">
